@@ -1,4 +1,3 @@
-/* Lillian Is the Author of here*/
 #pragma config(Sensor, in1,    clawLPot,       sensorPotentiometer)
 #pragma config(Sensor, in2,    clawRPot,       sensorPotentiometer)
 #pragma config(Sensor, in3,    armPot,         sensorPotentiometer)
