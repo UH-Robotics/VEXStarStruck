@@ -2,7 +2,7 @@
 #pragma config(Sensor, in2,    middle,         sensorReflection)
 #pragma config(Sensor, in3,    centerback,     sensorReflection)
 #pragma config(Sensor, in4,    leftback,       sensorReflection)
-#pragma config(Sensor, in5,    righback,       sensorReflection)
+#pragma config(Sensor, in5,    rightback,      sensorReflection)
 #pragma config(Sensor, dgtl1,  left,           sensorRotation)
 #pragma config(Sensor, dgtl2,  right,          sensorRotation)
 #pragma config(Motor,  port1,           left1,         tmotorVex393_HBridge, openLoop)
@@ -21,7 +21,7 @@ int turndist; //turn distance for 90 degrees
 
 task main()
 {
-
+	
 	//open claw
 	motor[claw1]=motor[claw1]= 100;
 	wait1Msec(200);
@@ -35,10 +35,10 @@ task main()
 	motor[left1]=motor[left2]=motor[left3]= 0;
 	motor[right1]=motor[right2]=motor[right3]= 0;
 	}
-
+	
 	//zero encoders
 	nMotorEncoder(left)=nMotorEncoder(right)=0;
-
+	
 	//turn until front and centerback light sensors are aligned
 	if(SensorValue[centerback] && SensorValue[front] < 100){
 	motor[left1]=motor[left2]=motor[left3]= -100;
@@ -47,21 +47,21 @@ task main()
 	motor[left1]=motor[left2]=motor[left3]= 0;
 	motor[right1]=motor[right2]=motor[right3]= 0;
 	}
-
+	
 	turndist = (nMotorEncoder(left)+nMotorEncoder(right))/2;
-
+	
 	//drive towards cube
 	motor[left1]=motor[left2]=motor[left3]= 127;
 	motor[right1]=motor[right2]=motor[right3]= 127;
 	wait1Msec(200);
 	motor[left1]=motor[left2]=motor[left3]= 0;
 	motor[right1]=motor[right2]=motor[right3]= 0;
-
+	
 	//close claw
 	motor[claw1]=motor[claw1]= -100;
 	wait1Msec(200);
-	motor[claw1]=motor[claw1]=0;
-
+	motor[claw1]=motor[claw1]=0;	
+	
 	//turn 90 degrees so rear faces wall
 	while (nMotorEncoder[left] < turndist)
 	{
@@ -69,7 +69,17 @@ task main()
 	motor[right1]=motor[right2]=motor[right3]= 100;
 	}
 	motor[left1]=motor[left2]=motor[left3]= 0;
+	motor[right1]=motor[right2]=motor[right3]= 0;	
+	
+	//drive backwards until line
+	if(SensorValue[centerback] && SensorValue[leftback] && SensorValue[rightback] <100){
+	motor[left1]=motor[left2]=motor[left3]= -127;
+	motor[right1]=motor[right2]=motor[right3]= -127;
+	}else{
+	motor[left1]=motor[left2]=motor[left3]= 0;
 	motor[right1]=motor[right2]=motor[right3]= 0;
-
-
+	}
+	
+	
+	
 }
