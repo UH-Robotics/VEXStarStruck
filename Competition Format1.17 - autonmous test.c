@@ -1,10 +1,15 @@
+@@ -0,0 +1,542 @@
+@@ -0,0 +1,541 @@
 #pragma config(Sensor, in1,    clawLPot,       sensorPotentiometer)
 #pragma config(Sensor, in2,    clawRPot,       sensorPotentiometer)
 #pragma config(Sensor, in3,    armPot,         sensorPotentiometer)
-#pragma config(Sensor, dgtl1,  button1,        sensorTouch)
-#pragma config(Sensor, dgtl2,  button2,        sensorTouch)
 #pragma config(Sensor, dgtl9,  encoderR,       sensorQuadEncoder)
 #pragma config(Sensor, dgtl11, encoderL,       sensorQuadEncoder)
+#pragma config(Sensor, in5,    middle,         sensorReflection)
+#pragma config(Sensor, in7,    centerback,     sensorReflection)
+#pragma config(Sensor, in6,    leftback,       sensorReflection)
+#pragma config(Sensor, in8,    righback,       sensorReflection)
+#pragma config(Sensor, in4,    front,      sensorReflection)
 #pragma config(Motor,  port1,           clawR,         tmotorVex393_HBridge, openLoop)
 #pragma config(Motor,  port2,           lift4,         tmotorVex393_MC29, openLoop)
 #pragma config(Motor,  port3,           lift3,         tmotorVex393_MC29, openLoop, reversed)
@@ -508,6 +513,7 @@ task driveManager()
 
 task autonomous()
 {
+	/*
   clearDebugStream();
 	datalogClear();
 	clearTimer(T1);
@@ -518,6 +524,84 @@ task autonomous()
 	int rightPower = 0;
 
 	ClawState = 3;
+	*/
+
+
+
+	//open claw
+	motor[claw1]=motor[claw1]= 100;
+	wait1Msec(200);
+@@ -35,10 +35,10 @@ task main()
+	motor[left1]=motor[left2]=motor[left3]= 0;
+	motor[right1]=motor[right2]=motor[right3]= 0;
+
+
+
+	//zero encoders
+	nMotorEncoder(left)=nMotorEncoder(right)=0;
+
+
+	//turn until front and centerback light sensors are aligned
+	if(SensorValue[centerback] && SensorValue[front] < 100){
+	motor[left1]=motor[left2]=motor[left3]= -100;
+@@ -47,21 +47,21 @@ task main()
+	motor[left1]=motor[left2]=motor[left3]= 0;
+	motor[right1]=motor[right2]=motor[right3]= 0;
+	}
+
+
+	turndist = (nMotorEncoder(left)+nMotorEncoder(right))/2;
+
+
+	//drive towards cube
+	motor[left1]=motor[left2]=motor[left3]= 127;
+	motor[right1]=motor[right2]=motor[right3]= 127;
+	wait1Msec(200);
+	motor[left1]=motor[left2]=motor[left3]= 0;
+	motor[right1]=motor[right2]=motor[right3]= 0;
+
+
+	//close claw
+	motor[claw1]=motor[claw1]= -100;
+	wait1Msec(200);
+	motor[claw1]=motor[claw1]=0;
+
+	motor[claw1]=motor[claw1]=0;
+
+	// Lift claw to not hit star
+
+	//turn 90 degrees so rear faces wall
+	while (nMotorEncoder[left] < turndist)
+	{
+@@ -69,7 +69,17 @@ task main()
+	motor[right1]=motor[right2]=motor[right3]= 100;
+	}
+	motor[left1]=motor[left2]=motor[left3]= 0;
+	motor[right1]=motor[right2]=motor[right3]= 0;
+
+	//drive backwards until line
+	if(SensorValue[centerback] && SensorValue[leftback] && SensorValue[rightback] <100){
+	motor[left1]=motor[left2]=motor[left3]= -127;
+	motor[right1]=motor[right2]=motor[right3]= -127;
+	}else{
+	motor[left1]=motor[left2]=motor[left3]= 0;
+	motor[right1]=motor[right2]=motor[right3]= 0;
+
+
+	}
+
+	//Throw backwards
+
+	// Lower arm
+
+	//Open claw to grab stars
+
+	// Close Claw
+
+	// Go back to fence
+
+	// Throw over fence
+
 }
 
 task usercontrol()
