@@ -512,9 +512,10 @@ task driveManager()
 task autonomous()
 {
   //open claw
-	motor[claw1]=motor[claw2]= 100;
+	motor[clawL]=motor[clawR]= 100;
 	wait1Msec(200);
-	motor[claw1]=motor[claw2]=0;
+	motor[clawL]=motor[clawR]=0;
+
 
 	//drive forward until line
 	if(SensorValue[middle]<100){
@@ -552,6 +553,14 @@ task autonomous()
 	motor[claw1]=motor[claw1]=0;
 
 	// Lift Claw
+	wait1Msec(100);
+	while(/*pot is less than a certan angle*/){
+		motor[lift1] = 100;
+	  motor[lift2] = 100;
+	  motor[lift3] = 100;
+	  motor[lift4] = 100;
+	}
+
 
 	//turn 90 degrees so rear faces wall
 	while (nMotorEncoder[left] < turndist)
