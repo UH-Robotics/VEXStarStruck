@@ -37,7 +37,7 @@ void SetArm(int power);
 // Pot calibration
 
 //Variables
-	//Claw variables
+//Claw variables
 int ClawLCalibrate = 0; //97 - calibrated value. difference from full closed value: (touching motor)
 int ClawRCalibrate = 0; //4060 - calibrated value. difference form full closed value: + means bigger number
 int ClawState = 9; 						// 0 - open, 1 - semi-closed, 2 - closed
@@ -52,7 +52,7 @@ int ClawRFullOpen = 1600+ClawRCalibrate;
 int CustomAngleL = 0+ClawLCalibrate; //If we want different/custom angles
 int CustomAngleR = 0+ClawRCalibrate;
 
-		//PID/stalls
+//PID/stalls
 int ClosePower = 70;//127 				// the test value for stall detect
 int ClawStallPower = 70;//60 			//power after stall
 int ClawStallTime = 1500;//1000 			//if the claw is not moving for this time, go to low power
@@ -64,7 +64,7 @@ int 	ClawFinePLimit = 10; //15 // this is the max power Fine motor can provide
 float ClawFineOffset = (ClawFineP==0?0:ClawFinePLimit-(ClawFinePLimit/ClawFineP*ClawP));
 int 	PILimit = 65;//60 // the limit of the total power P+I can provide
 
-	//Arm Variables##############################################################
+//Arm Variables##############################################################
 int ArmState = 9; 		// disabled
 int ArmCalibrate = 0; //2810 is zero position
 float ArmP = .8;		//.1? 	//P value for claw PID
@@ -92,18 +92,18 @@ int ArmTopAngle 	= 2940+ArmCalibrate;//after firing it will go here
 
 //function to make code go a certain distance
 void driveDistance(int target, int power){
-	 //settting sensors to zero
-	 SensorValue[encoderR] = 0;
-	 SensorValue[encoderL] = 0;
+	//settting sensors to zero
+	SensorValue[encoderR] = 0;
+	SensorValue[encoderL] = 0;
 
 
-   //the right encoder will be used to measure distance
+	//the right encoder will be used to measure distance
 
-	 int senL =  SensorValue[encoderL];
-	 int senR =  SensorValue[encoderR];
-	 int sensor = SensorValue[encoderR];
-   while(sensor < target){
-    motor[baseL1]=power;
+	int senL =  SensorValue[encoderL];
+	int senR =  SensorValue[encoderR];
+	int sensor = SensorValue[encoderR];
+	while(sensor < target){
+		motor[baseL1]=power;
 		motor[baseL2]=power;
 		motor[baseR1]=power;
 		motor[baseR2]=power;
@@ -124,31 +124,31 @@ void driveDistance(int target, int power){
 		}
 
 	}
-	  motor[baseL1]=0;
-		motor[baseL2]=0;
-		motor[baseR1]=0;
-		motor[baseR2]=0;
+	motor[baseL1]=0;
+	motor[baseL2]=0;
+	motor[baseR1]=0;
+	motor[baseR2]=0;
 }
 
 
 void pre_auton()
 {
-  bStopTasksBetweenModes = true;
+	bStopTasksBetweenModes = true;
 }
 void SetBase(int powerL, int powerR)
 {
-		motor[baseL1]=powerL;
-		motor[baseL2]=powerL;
-		motor[baseR1]=powerR;
-		motor[baseR2]=powerR;
-		return;
+	motor[baseL1]=powerL;
+	motor[baseL2]=powerL;
+	motor[baseR1]=powerR;
+	motor[baseR2]=powerR;
+	return;
 }
 void SetArm(int power)
 {
-	  motor[lift1]=power;
-	  motor[lift2]=power;
-	  motor[lift3]=power;
-	  motor[lift4]=power;
+	motor[lift1]=power;
+	motor[lift2]=power;
+	motor[lift3]=power;
+	motor[lift4]=power;
 }
 void SetClawL(int powerL)
 {
@@ -207,34 +207,34 @@ task clawTask() //this just manages the PID on the robot
 		{
 			switch (ClawState) //sets targets
 			{
-				case 1:
-					clawLTarget = CustomAngleL;
-					clawRTarget = CustomAngleR;
-					enablePID = true;
-					break;
-				case 2:
-					clawLTarget = CloseLAngle;
-					clawRTarget = CloseRAngle;
-					enablePID = true;
-					break;
-				case 3:
-					clawLTarget = ClawLSemicloseAngle;
-					clawRTarget = ClawRSemicloseAngle;
-					enablePID = true;
-					break;
-				case 4:
-					clawLTarget = ClawLOpen;
-					clawRTarget = ClawROpen;
-					enablePID = true;
-					break;
-				case 5:
-					clawLTarget = ClawLFullOpen;
-					clawRTarget = ClawRFullOpen;
-					enablePID = true;
-					break;
-				default:
-					enablePID = false;
-					break;
+			case 1:
+				clawLTarget = CustomAngleL;
+				clawRTarget = CustomAngleR;
+				enablePID = true;
+				break;
+			case 2:
+				clawLTarget = CloseLAngle;
+				clawRTarget = CloseRAngle;
+				enablePID = true;
+				break;
+			case 3:
+				clawLTarget = ClawLSemicloseAngle;
+				clawRTarget = ClawRSemicloseAngle;
+				enablePID = true;
+				break;
+			case 4:
+				clawLTarget = ClawLOpen;
+				clawRTarget = ClawROpen;
+				enablePID = true;
+				break;
+			case 5:
+				clawLTarget = ClawLFullOpen;
+				clawRTarget = ClawRFullOpen;
+				enablePID = true;
+				break;
+			default:
+				enablePID = false;
+				break;
 			}
 			ClawState = 0;
 			lastErrorL = errorL;
@@ -316,7 +316,7 @@ task clawTask() //this just manages the PID on the robot
 			stallTimeR = 0;
 		}
 
-//Setting motor power ------------------------------------------------
+		//Setting motor power ------------------------------------------------
 		if(!enablePID)//If PID disbaled
 		{
 			SetClawL(0);
@@ -390,35 +390,35 @@ task armTask()//################################################################
 		{
 			switch (armState) //sets targets
 			{
-				case 1: //custom angle
-					armTarget = CustomAngle;
-					fire = false;
-					enablePID = true;
-					break;
-				case 2:
-					armTarget = ArmDownAngle;
-					fire = false;
-					enablePID = true;
-					break;
-				case 3:
-					armTarget = ArmPrimeAngle;
-					fire = false;
-					enablePID = true;
-					break;
-				case 4:
-					armTarget = ArmHighAngle;
-					fire = false;
-					enablePID = true;
-					break;
-				case 5:
-					armTarget = ArmTopAngle;
-					enablePID = true;
-					fire = true;
-					break;
-				default:
-					enablePID = false;
-					fire = false;
-					break;
+			case 1: //custom angle
+				armTarget = CustomAngle;
+				fire = false;
+				enablePID = true;
+				break;
+			case 2:
+				armTarget = ArmDownAngle;
+				fire = false;
+				enablePID = true;
+				break;
+			case 3:
+				armTarget = ArmPrimeAngle;
+				fire = false;
+				enablePID = true;
+				break;
+			case 4:
+				armTarget = ArmHighAngle;
+				fire = false;
+				enablePID = true;
+				break;
+			case 5:
+				armTarget = ArmTopAngle;
+				enablePID = true;
+				fire = true;
+				break;
+			default:
+				enablePID = false;
+				fire = false;
+				break;
 			}
 			stallTime = 0; //time before stall is true
 			stalled = false; //limits motor power
@@ -436,7 +436,7 @@ task armTask()//################################################################
 		error = armTarget - armPotentiometer;
 		dError = (error - lastError)*(dTime>0?1000/dTime:0);
 
-//PID addition part
+		//PID addition part
 		if ((abs(accError)>abs(accError+error)) ) //if acc error will be reduced
 		{
 			accError+= error;
@@ -446,7 +446,7 @@ task armTask()//################################################################
 			accError+=error;
 		}
 		armPower = (abs(error*ArmFineP)<ArmFinePLimit? error*ArmFineP:(error*ArmP+(error>0?ArmFineOffset:-ArmFineOffset))) + dErrorAvg*ArmD + accError*ArmI; //arm power according to the PIDs
-//Stall Check
+		//Stall Check
 		if(abs(armPower)> ArmStallDetect)//checking whether motors are stalling
 		{
 			stallTime+=dTime;
@@ -460,7 +460,7 @@ task armTask()//################################################################
 			stalled = false;
 			stallTime = 0;
 		}
-//Fire stuffs
+		//Fire stuffs
 		if (fire && fireTargetTime == 0)
 		{
 			fireTargetTime = currentTime+FireExpireTime;
@@ -555,119 +555,119 @@ task driveManager()
 task autonomous()
 {
 
-	int turndist, runBegin, runEnd;
+int turndist, runBegin, runEnd;
 
-  //open claw
-	motor[clawR]= 100;
-	motor[clawL]= 100;
-	wait1Msec(200);
-	motor[clawL]= 0;
-	motor[clawR]=0;
-
-
+//open claw
+motor[clawR]= 100;
+motor[clawL]= 100;
+wait1Msec(200);
+motor[clawL]= 0;
+motor[clawR]=0;
 
 
 
-   while(1){
-	//drive forward until line
-	if(SensorValue[middle]<100){
-
-		motor[baseR1]=motor[baseR2]= 127;
-		motor[baseL1]=motor[baseL2]= 127;
-
-	}
-
-	else{
-
-		motor[baseR1]=motor[baseR2]= 0;
-		motor[baseL1]=motor[baseL2]= 0;
-		break;
-
-	}
-
-	}
-	//zero encoders
 
 
-	runBegin  = (nMotorEncoder(encoderL)+nMotorEncoder(encoderR));
+while(1){
+//drive forward until line
+if(SensorValue[middle]<100){
 
-	//turn until front and centerback light sensors are aligned
-	while(1) {
+motor[baseR1]=motor[baseR2]= 127;
+motor[baseL1]=motor[baseL2]= 127;
 
-	if(SensorValue[centerback] && SensorValue[front] < 100){
+}
 
-		motor[baseR1]=motor[baseR2]= -100;
-		motor[baseR1]=motor[baseR2]= 100;
+else{
 
-	}
+motor[baseR1]=motor[baseR2]= 0;
+motor[baseL1]=motor[baseL2]= 0;
+break;
 
-	else{
+}
 
-		motor[baseR1]=motor[baseR2]= 0;
-		motor[baseR1]=motor[baseR2]= 0;
-		break;
-		}
-
-	}
-
-	runEnd  = (nMotorEncoder(encoderL)+nMotorEncoder(encoderR))/2;
-
-	turndist = runEnd - runBegin;
-
-	//drive towards cube
-	motor[baseR1]=motor[baseR2]= 127;
-	motor[baseL1]=motor[baseL2]= 127;
-	wait1Msec(200);
-	// we should encoder values here instead of time.
-	motor[baseR1]=motor[baseR2]= 0;
-	motor[baseL1]=motor[baseL2]= 0;
-
-	//close claw
-	motor[clawL]=motor[clawR]= -100;
-	wait1Msec(200);
-	motor[clawL]=motor[clawR]=0;
-
-	// Lift Claw
-	wait1Msec(100);
-	int sensorArmPot;
-
-	sensorArmPot = SensorValue[armPot];
-	//turn 90 degrees so rear faces wall
-	while ( sensorArmPot < 2000){
-
-	sensorArmPot = SensorValue[armPot];
-	}
-
-	while (nMotorEncoder[encoderL] < turndist)
-	{
- 		motor[baseR1]=motor[baseR2]= -100;
-		motor[baseR1]=motor[baseR2]= 100;
-	}
-		motor[baseR1]=motor[baseR2]= 0;
-		motor[baseR1]=motor[baseR2]= 0;
-
-	//drive backwards until line
-	if(SensorValue[centerback] && SensorValue[leftback] && SensorValue[rightback] <100){
-		motor[baseR1]=motor[baseR2]= -127;
-	motor[baseL1]=motor[baseL2]= -127;
-	}else{
-		motor[baseR1]=motor[baseR2]= 0;
-		motor[baseR1]=motor[baseR2]= 0;
-	}
+}
+//zero encoders
 
 
+runBegin  = (nMotorEncoder(encoderL)+nMotorEncoder(encoderR));
 
-	// Throw Cube
+//turn until front and centerback light sensors are aligned
+while(1) {
 
-	// Lower arm
+if(SensorValue[centerback] && SensorValue[front] < 100){
 
-	// Open claw to grab stars
+motor[baseR1]=motor[baseR2]= -100;
+motor[baseR1]=motor[baseR2]= 100;
 
-	// Close Claw
+}
 
-	// Go back to fence
+else{
 
-	// Throw over fence
+motor[baseR1]=motor[baseR2]= 0;
+motor[baseR1]=motor[baseR2]= 0;
+break;
+}
+
+}
+
+runEnd  = (nMotorEncoder(encoderL)+nMotorEncoder(encoderR))/2;
+
+turndist = runEnd - runBegin;
+
+//drive towards cube
+motor[baseR1]=motor[baseR2]= 127;
+motor[baseL1]=motor[baseL2]= 127;
+wait1Msec(200);
+// we should encoder values here instead of time.
+motor[baseR1]=motor[baseR2]= 0;
+motor[baseL1]=motor[baseL2]= 0;
+
+//close claw
+motor[clawL]=motor[clawR]= -100;
+wait1Msec(200);
+motor[clawL]=motor[clawR]=0;
+
+// Lift Claw
+wait1Msec(100);
+int sensorArmPot;
+
+sensorArmPot = SensorValue[armPot];
+//turn 90 degrees so rear faces wall
+while ( sensorArmPot < 2000){
+
+sensorArmPot = SensorValue[armPot];
+}
+
+while (nMotorEncoder[encoderL] < turndist)
+{
+motor[baseR1]=motor[baseR2]= -100;
+motor[baseR1]=motor[baseR2]= 100;
+}
+motor[baseR1]=motor[baseR2]= 0;
+motor[baseR1]=motor[baseR2]= 0;
+
+//drive backwards until line
+if(SensorValue[centerback] && SensorValue[leftback] && SensorValue[rightback] <100){
+motor[baseR1]=motor[baseR2]= -127;
+motor[baseL1]=motor[baseL2]= -127;
+}else{
+motor[baseR1]=motor[baseR2]= 0;
+motor[baseR1]=motor[baseR2]= 0;
+}
+
+
+
+// Throw Cube
+
+// Lower arm
+
+// Open claw to grab stars
+
+// Close Claw
+
+// Go back to fence
+
+// Throw over fence
 }*/
 
 
@@ -679,8 +679,8 @@ task autonomous()
 
 /*----------------To do list------------------*/
 /*calculate distance to fence so we can go back the exact same distance
- fix the drive distance functionn
- fix the parameters in the drive distance function*/
+fix the drive distance functionn
+fix the parameters in the drive distance function*/
 
 
 
@@ -693,23 +693,30 @@ task autonomous()
 //
 
 task autonomous(){
+	clearDebugStream();
+	datalogClear();
+	clearTimer(T1);
+	startTask(clawTask);
+	wait1Msec(5);
+	startTask(armTask);
+
 	//int run;
 	//run = 1;
 
 	//while(run){
 
-  //claw opening
-  ClawState = 5;
-  wait1Msec(500);
+	//claw opening
+	ClawState = 5;
+	wait1Msec(500);
 
-  //base moves forward until it sees white line
-  int middleLightSensor = 0;
-  middleLightSensor = SensorValue[middle];
+	//base moves forward until it sees white line
+	int middleLightSensor = 0;
+	middleLightSensor = SensorValue[middle];
 
-  while(middleLightSensor > 1000/*adjust value*/){
-  	SetBase(100,100);
-  	middleLightSensor = SensorValue[middle];   //I update sensorvalue
-  }
+	while(middleLightSensor > 1000/*adjust value*/){
+		SetBase(100,100);
+		middleLightSensor = SensorValue[middle];   //I update sensorvalue
+	}
 
 	SetBase(0,0);		// I set motors to zero after it reaches center of the field
 
@@ -723,21 +730,21 @@ task autonomous(){
 		while(frontS<2000 && backC > 2000){
 			SetBase(-60,60);
 			frontS = SensorValue(front);
-	    backC = SensorValue(centerback);
+			backC = SensorValue(centerback);
 		}
 		while(frontS>2000 && backC < 2000){
 			SetBase(60,-60);
 			frontS = SensorValue(front);
-	    backC = SensorValue(centerback);
+			backC = SensorValue(centerback);
 		}
-			frontS = SensorValue(front);
-	    backC = SensorValue(centerback);
+		frontS = SensorValue(front);
+		backC = SensorValue(centerback);
 
-		}
+	}
 
-		SetBase(0,0);
+	SetBase(0,0);
 
-		wait1Msec(200);
+	wait1Msec(200);
 
 
 
@@ -765,7 +772,7 @@ task autonomous(){
 		SetBase(-80,80);
 		tS = SensorValue(encoderR);
 	}
-	 SetBase(0,0);
+	SetBase(0,0);
 
 	//robot moves backwards till it sees the line
 	//Set code to stop robot from bumbing into the fence if it doesnt read the sensors
@@ -776,121 +783,121 @@ task autonomous(){
 	leftB = SensorValue(leftback);
 	middleBack = SensorValue(leftback);
 	while(rightB > 2000 /*adjust value*/&& leftB > 2000/*adjust value*/){
-	  SetBase(-80,-80);
+		SetBase(-80,-80);
 
 		if(rightB < 2000/*adjust value*/ && leftB > 2000/*adjust value*/)
 		{  while(rightB < 2000){
-			  SetBase(-60,0);
-			  rightB = SensorValue(rightback);
+				SetBase(-60,0);
+				rightB = SensorValue(rightback);
 			}
 		}
 		if(rightB > 2000/*adjust value*/ && leftB < 2000/*adjust value*/)
 		{  while(leftB < 2000){
-			  SetBase(0,-60);
-			  leftB = SensorValue(leftback);
+				SetBase(0,-60);
+				leftB = SensorValue(leftback);
 			}
 		}
 		rightB = SensorValue(rightback);
-	  leftB = SensorValue(leftback);
-  }
+		leftB = SensorValue(leftback);
+	}
 
-  SetBase(0,0);    //zeroing motors
-  wait1Msec(100);
+	SetBase(0,0);    //zeroing motors
+	wait1Msec(100);
 
-  //robot moves cloesr to the fence
-  middleBack = SensorValue(middle);
-  while(middleBack > 2000/*adjust value*/)
-  {
-  	SetBase(-70,-70);
-  	middleBack = SensorValue(middle);
-  }
-  SetBase(0,0);
+	//robot moves cloesr to the fence
+	middleBack = SensorValue(middle);
+	while(middleBack > 2000/*adjust value*/)
+	{
+		SetBase(-70,-70);
+		middleBack = SensorValue(middle);
+	}
+	SetBase(0,0);
 
-  //fire cube
-  ArmState = 5;  //sets arm to fire
-  wait1Msec(500);
-  ClawState = 5; //sets claw to fire
-  wait1Msec(500);
+	//fire cube
+	ArmState = 5;  //sets arm to fire
+	wait1Msec(500);
+	ClawState = 5; //sets claw to fire
+	wait1Msec(500);
 
-  //brings lift back down
-  ArmState = 2;  //atate brings arm down
-  wait1Msec(500);
+	//brings lift back down
+	ArmState = 2;  //atate brings arm down
+	wait1Msec(500);
 
-  //it should back up a little bit
-  SensorValue[encoderL] = 0;
-  int EnoderValue = SensorValue[encoderL];
-  int targetL;   // find wht target value we should use
-  while(EnoderValue <  targetL)
-  {
-  	SetBase(100,100);
-  	EnoderValue = SensorValue[encoderL];
+	//it should back up a little bit
+	SensorValue[encoderL] = 0;
+	int EnoderValue = SensorValue[encoderL];
+	int targetL;   // find wht target value we should use
+	while(EnoderValue <  targetL)
+	{
+		SetBase(100,100);
+		EnoderValue = SensorValue[encoderL];
 
-  }
+	}
 
 
-  //didn't remeber  what variables were for sensors so made new variables
-  int bR,bC,bL;
-  bR = SensorValue[rightback];
-  bC = SensorValue[centerback];
-  bL = SensorValue[leftback];
+	//didn't remeber  what variables were for sensors so made new variables
+	int bR,bC,bL;
+	bR = SensorValue[rightback];
+	bC = SensorValue[centerback];
+	bL = SensorValue[leftback];
 
-  //drives back to pik stars
-  while(bC > 2000)
-  {
-  	SetBase(100,100);
-  	bC = SensorValue[centerback];
-  }
+	//drives back to pik stars
+	while(bC > 2000)
+	{
+		SetBase(100,100);
+		bC = SensorValue[centerback];
+	}
 
-  wait1Msec(100);
+	wait1Msec(100);
 
-  //claw closing
-  ClawState = 2;
-  wait1Msec(100);
-  //arm raising
-  ArmState = 3;
-  wait1Msec(100);
+	//claw closing
+	ClawState = 2;
+	wait1Msec(100);
+	//arm raising
+	ArmState = 3;
+	wait1Msec(100);
 
-  //drive up to line again
-  rightB = SensorValue(rightback);
+	//drive up to line again
+	rightB = SensorValue(rightback);
 	leftB = SensorValue(leftback);
 	middleBack = SensorValue(leftback);
 	while(rightB > 2000 /*adjust value*/&& leftB > 2000/*adjust value*/){
-	  SetBase(-80,-80);
+		SetBase(-80,-80);
 
 		if(rightB < 2000/*adjust value*/ && leftB > 2000/*adjust value*/)
 		{  while(rightB < 2000){
-			  SetBase(-60,0);
-			  rightB = SensorValue(rightback);
+				SetBase(-60,0);
+				rightB = SensorValue(rightback);
 			}
 		}
 		if(rightB > 2000/*adjust value*/ && leftB < 2000/*adjust value*/)
 		{  while(leftB < 2000){
-			  SetBase(0,-60);
-			  leftB = SensorValue(leftback);
+				SetBase(0,-60);
+				leftB = SensorValue(leftback);
 			}
 		}
 		rightB = SensorValue(rightback);
-	  leftB = SensorValue(leftback);
-  }
+		leftB = SensorValue(leftback);
+	}
 
 
 
-  while(middleBack > 2000/*adjust value*/)
-  {
-  	SetBase(-70,-70);
-  	middleBack = SensorValue(middle);
-  }
-  SetBase(0,0);
+	while(middleBack > 2000/*adjust value*/)
+	{
+		SetBase(-70,-70);
+		middleBack = SensorValue(middle);
+	}
+	SetBase(0,0);
 
-  //firing stars
-  ArmState = 5;
-  wait1Msec(300);
-  ClawState = 5;
-  wait1Msec(300);
-  ArmState = 2;  //brings claw down
+	//firing stars
+	ArmState = 5;
+	wait1Msec(300);
+	ClawState = 5;
+	wait1Msec(300);
+	ArmState = 2;  //brings claw down
 
-  //for now end autonomous;
-//}
+	//for now end autonomous;
+}
 
 task usercontrol()
 {
