@@ -700,22 +700,12 @@ task autonomous(){
 	wait1Msec(5);
 	startTask(armTask);
 
-	//int run;
-	//run = 1;
-
-	//while(run){
-
 	//claw opening
 	ClawState = 5;
 	wait1Msec(500);
 
-	//base moves forward until it sees white line
-	int middleLightSensor = 0;
-	middleLightSensor = SensorValue[middle];
-
-	while(middleLightSensor > 1000/*adjust value*/){
+	while(SensorValue[middle] > 75 /*adjust value*/){
 		SetBase(100,100);
-		middleLightSensor = SensorValue[middle];   //I update sensorvalue
 	}
 
 	SetBase(0,0);		// I set motors to zero after it reaches center of the field
@@ -723,23 +713,14 @@ task autonomous(){
 	wait10Msec(500);
 
 	//robot turn 90 degrees when it gets to line
-	int frontS = SensorValue(front);
-	int backC = SensorValue(centerback);
-	while(frontS > 2000 &&  backC > 2000 ){
+	while(SensorValue(front) > 2000 &&  SensorValue(centerback) > 2000 ){
 		SetBase(-80,80);
-		while(frontS<2000 && backC > 2000){
+		while(SensorValue(front) < 2000 && SensorValue(centerback) > 2000){
 			SetBase(-60,60);
-			frontS = SensorValue(front);
-			backC = SensorValue(centerback);
 		}
-		while(frontS>2000 && backC < 2000){
+		while(SensorValue(front) > 2000 && SensorValue(centerback) < 2000){
 			SetBase(60,-60);
-			frontS = SensorValue(front);
-			backC = SensorValue(centerback);
 		}
-		frontS = SensorValue(front);
-		backC = SensorValue(centerback);
-
 	}
 
 	SetBase(0,0);
@@ -766,50 +747,35 @@ task autonomous(){
 	SensorValue(encoderR) = SensorValue(encoderL)= 0;
 
 	//robot does 90 degree turn
-	int tS = SensorValue(encoderR);
-	while(tS < 400)
+	while(SensorValue(encoderR) < 400)
 	{
 		SetBase(-80,80);
-		tS = SensorValue(encoderR);
 	}
 	SetBase(0,0);
 
 	//robot moves backwards till it sees the line
 	//Set code to stop robot from bumbing into the fence if it doesnt read the sensors
-	int rightB,leftB,middleBack;
-
-	//initializing encoder values
-	rightB = SensorValue(rightback);
-	leftB = SensorValue(leftback);
-	middleBack = SensorValue(leftback);
-	while(rightB > 2000 /*adjust value*/&& leftB > 2000/*adjust value*/){
+	while(SensorValue(rightback) > 2000 /*adjust value*/&& SensorValue(leftback) > 2000/*adjust value*/){
 		SetBase(-80,-80);
-
-		if(rightB < 2000/*adjust value*/ && leftB > 2000/*adjust value*/)
-		{  while(rightB < 2000){
+		if(SensorValue(rightback) < 2000/*adjust value*/ && SensorValue(leftback) > 2000/*adjust value*/)
+		{  while(SensorValue(rightback) < 2000){
 				SetBase(-60,0);
-				rightB = SensorValue(rightback);
 			}
 		}
-		if(rightB > 2000/*adjust value*/ && leftB < 2000/*adjust value*/)
-		{  while(leftB < 2000){
+		if(SensorValue(rightback) > 2000/*adjust value*/ && SensorValue(leftback) < 2000/*adjust value*/)
+		{  while(SensorValue(leftback) < 2000){
 				SetBase(0,-60);
-				leftB = SensorValue(leftback);
 			}
 		}
-		rightB = SensorValue(rightback);
-		leftB = SensorValue(leftback);
 	}
 
 	SetBase(0,0);    //zeroing motors
 	wait1Msec(100);
 
 	//robot moves cloesr to the fence
-	middleBack = SensorValue(middle);
-	while(middleBack > 2000/*adjust value*/)
+	while(SensorValue(middle) > 2000/*adjust value*/)
 	{
 		SetBase(-70,-70);
-		middleBack = SensorValue(middle);
 	}
 	SetBase(0,0);
 
@@ -824,28 +790,17 @@ task autonomous(){
 	wait1Msec(500);
 
 	//it should back up a little bit
-	SensorValue[encoderL] = 0;
-	int EnoderValue = SensorValue[encoderL];
 	int targetL;   // find wht target value we should use
-	while(EnoderValue <  targetL)
+	while(SensorValue[encoderL] <  targetL)
 	{
 		SetBase(100,100);
-		EnoderValue = SensorValue[encoderL];
 
 	}
 
-
-	//didn't remeber  what variables were for sensors so made new variables
-	int bR,bC,bL;
-	bR = SensorValue[rightback];
-	bC = SensorValue[centerback];
-	bL = SensorValue[leftback];
-
 	//drives back to pik stars
-	while(bC > 2000)
+	while(SensorValue[centerback] > 2000)
 	{
 		SetBase(100,100);
-		bC = SensorValue[centerback];
 	}
 
 	wait1Msec(100);
@@ -858,34 +813,24 @@ task autonomous(){
 	wait1Msec(100);
 
 	//drive up to line again
-	rightB = SensorValue(rightback);
-	leftB = SensorValue(leftback);
-	middleBack = SensorValue(leftback);
-	while(rightB > 2000 /*adjust value*/&& leftB > 2000/*adjust value*/){
+	while(SensorValue(rightback) > 2000 /*adjust value*/&& SensorValue(leftback) > 2000/*adjust value*/){
 		SetBase(-80,-80);
 
-		if(rightB < 2000/*adjust value*/ && leftB > 2000/*adjust value*/)
-		{  while(rightB < 2000){
+		if(SensorValue(rightback) < 2000/*adjust value*/ && SensorValue(leftback) > 2000/*adjust value*/)
+		{  while(SensorValue(rightback) < 2000){
 				SetBase(-60,0);
-				rightB = SensorValue(rightback);
 			}
 		}
-		if(rightB > 2000/*adjust value*/ && leftB < 2000/*adjust value*/)
-		{  while(leftB < 2000){
+		if(SensorValue(rightback) > 2000/*adjust value*/ && SensorValue(leftback) < 2000/*adjust value*/)
+		{  while(SensorValue(leftback) < 2000){
 				SetBase(0,-60);
-				leftB = SensorValue(leftback);
 			}
 		}
-		rightB = SensorValue(rightback);
-		leftB = SensorValue(leftback);
 	}
 
-
-
-	while(middleBack > 2000/*adjust value*/)
+	while(SensorValue(leftback) > 2000/*adjust value*/)
 	{
 		SetBase(-70,-70);
-		middleBack = SensorValue(middle);
 	}
 	SetBase(0,0);
 
