@@ -38,8 +38,8 @@ void SetArm(int power);
 
 //Variables
 //Claw variables
-int ClawLCalibrate = 0; //97 - calibrated value. difference from full closed value: (touching motor)
-int ClawRCalibrate = 0; //4060 - calibrated value. difference form full closed value: + means bigger number
+int ClawLCalibrate = 97 - 90; //97 - calibrated value. difference from full closed value: (touching motor)
+int ClawRCalibrate = 40; //4060 - calibrated value. difference form full closed value: + means bigger number
 int ClawState = 9; 						// 0 - open, 1 - semi-closed, 2 - closed
 int CloseLAngle = 820+ClawLCalibrate; 				//the angle the claw is closed
 int CloseRAngle = 3100+ClawRCalibrate; 				//the angle the claw is closed
@@ -56,10 +56,10 @@ int CustomAngleR = 0+ClawRCalibrate;
 int ClosePower = 70;//127 				// the test value for stall detect
 int ClawStallPower = 70;//60 			//power after stall
 int ClawStallTime = 1500;//1000 			//if the claw is not moving for this time, go to low power
-float ClawP = .2;//.1? 	//P value for claw PID
+float ClawP = .4;//.1? 	//P value for claw PID
 float ClawD = .001;//.001 	// D value for PID
 float ClawI = .005; //.015
-float ClawFineP = .4;//.2 //when error gets close to 0, this takes over
+float ClawFineP = 1;//.2 //when error gets close to 0, this takes over
 int 	ClawFinePLimit = 10; //15 // this is the max power Fine motor can provide
 float ClawFineOffset = (ClawFineP==0?0:ClawFinePLimit-(ClawFinePLimit/ClawFineP*ClawP));
 int 	PILimit = 65;//60 // the limit of the total power P+I can provide
@@ -67,11 +67,11 @@ int 	PILimit = 65;//60 // the limit of the total power P+I can provide
 //Arm Variables##############################################################
 int ArmState = 9; 		// disabled
 int ArmCalibrate = 0; //2810 is zero position
-float ArmP = .8;		//.1? 	//P value for claw PID
-float ArmD = .002;	//.006 	// D value for PID
+float ArmP = .12;		//.1? 	//P value for claw PID
+float ArmD = .000;	//.006 	// D value for PID
 float ArmI = .0025; 	//.0025
-float ArmFineP = .2;	//.08 //when error gets close to 0, this takes over
-int ArmFinePLimit = 8; //12 // this is the max power Fine motor can provide
+float ArmFineP = .1;	//.08 //when error gets close to 0, this takes over
+int ArmFinePLimit = 75; //12 // this is the max power Fine motor can provide
 float ArmFineOffset = (ArmFineP==0?0:ArmFinePLimit-(ArmFinePLimit/ArmFineP*ArmP));
 int ArmPILimit = 45;	//60 // the limit of the total power P+I can provide
 int ArmStallPower = 50; //60
@@ -82,7 +82,7 @@ int FireExpireTime = 1500; //1500 if it is firing for longer than this amount of
 int FireOverdriveTime = 20; // 60number of milliseconds it will keep driving arm after it reached fire angle
 bool ArmFired = false;
 // arm angles
-int CustomAngle 	= 1400; 	//Custom arm angle
+int CustomAngle 	= 2770; 	//Custom arm angle
 int ArmDownAngle	= 960+ArmCalibrate;//intake angle
 int ArmPrimeAngle = 1400+ArmCalibrate; //1070 just above the ground
 int ArmHighAngle 	= 1690+ArmCalibrate;//just a fun angle for w/e
@@ -562,11 +562,10 @@ fix the parameters in the drive distance function*/
 
 
 
-
-
 //
 
 task autonomous(){
+
 	clearDebugStream();
 	datalogClear();
 	clearTimer(T1);
@@ -574,148 +573,315 @@ task autonomous(){
 	wait1Msec(5);
 	startTask(armTask);
 
-	//claw opening
+	////claw opening
+
 	ClawState = 5;
-	wait1Msec(500);
+	while(!((SensorValue[clawLPot] < (ClawLFullOpen + 100) && SensorValue[clawLPot] > (ClawLFullOpen - 100)) &&
+		(SensorValue[clawRPot] < (ClawRFullOpen + 100) && SensorValue[clawRPot] > (ClawRFullOpen - 100)))){} // Wait until state
 
-	while(SensorValue[middle] > 75 /*adjust value*/){
+	ArmState = 1;  //raise arms up
+	while(!(SensorValue[armPot] < (CustomAngle + 100) && SensorValue[armPot] > (CustomAngle - 100))){} // Wait until state
+
+	ArmState = 9;
+
+	////while(SensorValue[middle] > 400 /*adjust value*/){
+	//	SetBase(20,20);
+
+	//	if(SensorValue[middle] < 400)
+	//	{
+	//		SetBase(0,0);
+	//		break;
+	//	}
+	//}
+
+	wait1Msec(100);
+	SensorValue[encoderL] = SensorValue[encoderR] = 0;
+
+	//move foward
+	int firstdrive = 500;
+	int encR = 600;
+
+	while(((Sensorvalue[encoderR] + Sensorvalue[encoderL]) /2 )< firstdrive){
+		SetBase(70,70);
+	}
+
+
+
+	//while(Sensorvalue[encoderR] < -400 )
+	//	{
+
+	//	}
+
+
+
+	wait1Msec(200);
+	SensorValue[encoderL] = SensorValue[encoderR] = 0;
+
+	//turn horizintal
+	while(Sensorvalue[encoderR] < 470){
+		SetBase(-40,40);
+
+  }
+
+  SensorValue[encoderL] = SensorValue[encoderR] = 0;
+  while(((Sensorvalue[encoderR] + Sensorvalue[encoderL])*0.5) < encR){
 		SetBase(100,100);
 	}
 
-	SetBase(0,0);		// I set motors to zero after it reaches center of the field
+	SensorValue[encoderL] = SensorValue[encoderR] = 0;
+	while(Sensorvalue[encoderR] < 470){
+		SetBase(-40,40);
 
-	wait10Msec(500);
-
-	//robot turn 90 degrees when it gets to line
-	while(SensorValue(front) > 2000 &&  SensorValue(centerback) > 2000 ){
-		SetBase(-80,80);
-		while(SensorValue(front) < 2000 && SensorValue(centerback) > 2000){
-			SetBase(-60,60);
-		}
-		while(SensorValue(front) > 2000 && SensorValue(centerback) < 2000){
-			SetBase(60,-60);
-		}
-	}
-
-	SetBase(0,0);
-
-	wait1Msec(200);
+  }
 
 
+		SetBase(-40,-40);
 
-	//robot moves a distance of half the field
+		wait1Msec(1000)
+
+		//bad very baaaaad
+		//SetBase(0,0);
 
 
-	driveDistance(600,100);  //sets drive distance to 61 inches and power to 80
-	wait1Msec(200);
+  	ArmState = 1;  //raise arms up
+	while(!(SensorValue[armPot] < (CustomAngle + 100) && SensorValue[armPot] > (CustomAngle - 100))){}
 
-	//robot closes claw and picks up cubes
-	ClawState = 2;
 
-	wait1Msec(200);
 
-	//robot lifts up arm
-	ArmState = 3;
-	wait1Msec(200);
 
-	SensorValue(encoderR) = SensorValue(encoderL)= 0;
 
-	//robot does 90 degree turn
-	while(SensorValue(encoderR) < 400)
-	{
-		SetBase(-80,80);
-	}
-	SetBase(0,0);
 
-	//robot moves backwards till it sees the line
-	//Set code to stop robot from bumbing into the fence if it doesnt read the sensors
-	while(SensorValue(rightback) > 2000 /*adjust value*/&& SensorValue(leftback) > 2000/*adjust value*/){
-		SetBase(-80,-80);
-		if(SensorValue(rightback) < 2000/*adjust value*/ && SensorValue(leftback) > 2000/*adjust value*/)
-		{  while(SensorValue(rightback) < 2000){
-				SetBase(-60,0);
-			}
-		}
-		if(SensorValue(rightback) > 2000/*adjust value*/ && SensorValue(leftback) < 2000/*adjust value*/)
-		{  while(SensorValue(leftback) < 2000){
-				SetBase(0,-60);
-			}
-		}
-	}
 
-	SetBase(0,0);    //zeroing motors
-	wait1Msec(100);
 
-	//robot moves cloesr to the fence
-	while(SensorValue(middle) > 2000/*adjust value*/)
-	{
-		SetBase(-70,-70);
-	}
-	SetBase(0,0);
 
-	//fire cube
-	ArmState = 5;  //sets arm to fire
-	wait1Msec(500);
-	ClawState = 5; //sets claw to fire
-	wait1Msec(500);
 
-	//brings lift back down
-	ArmState = 2;  //atate brings arm down
-	wait1Msec(500);
+	//wait1Msec(200);
 
-	//it should back up a little bit
-	int targetL;   // find wht target value we should use
-	while(SensorValue[encoderL] <  targetL)
-	{
-		SetBase(100,100);
 
-	}
+	////disable PID
+	//wait1Msec(300)
+	//SensorValue[encoderL] = SensorValue[encoderR] = 0;
 
-	//drives back to pik stars
-	while(SensorValue[centerback] > 2000)
-	{
-		SetBase(100,100);
-	}
+	////move foward
+	//while(sensorvalue[encoderR] < 400)///////{
+	//	SetBase(40,40);
 
-	wait1Msec(100);
+ // }
 
-	//claw closing
-	ClawState = 2;
-	wait1Msec(100);
-	//arm raising
-	ArmState = 3;
-	wait1Msec(100);
+ // wait1Msec(300);
 
-	//drive up to line again
-	while(SensorValue(rightback) > 2000 /*adjust value*/&& SensorValue(leftback) > 2000/*adjust value*/){
-		SetBase(-80,-80);
+ // SensorValue[encoderL] = SensorValue[encoderR] = 0;
+	////turns backward
+	//while(sensorvalue[encoderR] < 100)/////////{
+	//	SetBase(-40,40);
 
-		if(SensorValue(rightback) < 2000/*adjust value*/ && SensorValue(leftback) > 2000/*adjust value*/)
-		{  while(SensorValue(rightback) < 2000){
-				SetBase(-60,0);
-			}
-		}
-		if(SensorValue(rightback) > 2000/*adjust value*/ && SensorValue(leftback) < 2000/*adjust value*/)
-		{  while(SensorValue(leftback) < 2000){
-				SetBase(0,-60);
-			}
-		}
-	}
+ // }
 
-	while(SensorValue(leftback) > 2000/*adjust value*/)
-	{
-		SetBase(-70,-70);
-	}
-	SetBase(0,0);
+ // wait1Msec(300);
+ // //moving towards fence
+ // SensorValue[encoderL] = SensorValue[encoderR] = 0;
+ // while(sensorvalue[encoderR] < 100)///////{
+	//	SetBase(-100,-100);
 
-	//firing stars
-	ArmState = 5;
-	wait1Msec(300);
-	ClawState = 5;
-	wait1Msec(300);
-	ArmState = 2;  //brings claw down
+ // }
+ // wait1Msec(300);
 
-	//for now end autonomous;
+ // // stop base
+ // SetBase(0,0);
+
+
+
+
+	//SensorValue[encoderL] = SensorValue[encoderR] = 0;
+	//while(SensorValue[encoderL] > -720)
+	//{
+	//	SetBase(-30,0);
+	//}
+
+	//SetBase(0,0);		// I set motors to zero after it reaches center of the field
+
+	//wait10Msec(10);
+
+	//SensorValue[encoderL] = SensorValue[encoderR] = 0;
+	//while(SensorValue[encoderR] < 120)
+	//{
+	//	SetBase(60,60);
+	//	}
+
+	//wait10Msec(30);
+
+
+	////robot closes claw and picks up cubes
+	//ClawState = 2;
+	//while(!((SensorValue[clawLPot] < (CloseLAngle + 100) && SensorValue[clawLPot] > (CloseLAngle - 100)) &&
+	//	(SensorValue[clawRPot] < (CloseRAngle + 100) && SensorValue[clawRPot] > (CloseRAngle - 100)))){} // Wait until state
+
+
+	////robot lifts up arm
+	//ArmState = 4;
+	//while(!(SensorValue[armPot] < (ArmHighAngle + 100) && SensorValue[armPot] > (ArmHighAngle - 100))){} // Wait until state
+
+	//SensorValue[encoderL] = SensorValue[encoderR] = 0;
+	//while(SensorValue[encoderL] > -100) {
+	//	SetBase(-30,0);
+	//}
+
+	//SensorValue[encoderL] = SensorValue[encoderR] = 0;
+	//while(SensorValue[encoderL] > -70) {
+	//	SetBase(-30,-30);
+	//}
+	//SetBase(0,0)
+
+
+
+
+
+
+
+	//wait10Msec(500);
+
+	////robot turn 90 degrees when it gets to line
+	//while(SensorValue(front) > 400 &&  SensorValue(centerback) > 400 ){
+	//	SetBase(-40,40);
+	//	while(SensorValue(front) < 400 && SensorValue(centerback) > 400){
+	//		SetBase(-30,30);
+	//	}
+	//	while(SensorValue(front) > 400 && SensorValue(centerback) < 400){
+	//		SetBase(30,-30);
+	//	}
+	//}
+
+	//SetBase(0,0);
+
+	//wait1Msec(200);
+
+
+
+	////robot moves a distance of half the field
+
+
+	//driveDistance(600,100);  //sets drive distance to 61 inches and power to 80
+	//wait1Msec(200);
+
+	////robot closes claw and picks up cubes
+	//ClawState = 2;
+	//while(!((SensorValue[clawLPot] < (CloseLAngle + 100) && SensorValue[clawLPot] > (CloseLAngle - 100)) &&
+	//	(SensorValue[clawRPot] < (CloseRAngle + 100) && SensorValue[clawRPot] > (CloseRAngle - 100)))){} // Wait until state
+
+
+	////robot lifts up arm
+	//ArmState = 4;
+	//while(!(SensorValue[armPot] < (ArmHighAngle + 100) && SensorValue[armPot] > (ArmHighAngle - 100))){} // Wait until state
+
+
+	//SensorValue(encoderR) = SensorValue(encoderL)= 0;
+
+	////robot does 90 degree turn
+	//while(SensorValue(encoderR) > 1000)
+	//{
+	//	SetBase(-40,40);
+	//}
+	//SetBase(0,0);
+
+	////robot moves backwards till it sees the line
+	////Set code to stop robot from bumbing into the fence if it doesnt read the sensors
+	//while(SensorValue(rightback) > 400 /*adjust value*/&& SensorValue(leftback) > 400/*adjust value*/){
+	//	SetBase(-40,-40);
+	//	if(SensorValue(rightback) < 400/*adjust value*/ && SensorValue(leftback) > 400/*adjust value*/)
+	//	{  while(SensorValue(leftback) > 400){
+	//			SetBase(-30,0);
+	//		}
+	//	}
+	//	if(SensorValue(rightback) > 400/*adjust value*/ && SensorValue(leftback) < 400/*adjust value*/)
+	//	{  while(SensorValue(rightback) > 400){
+	//			SetBase(0,-30);
+	//		}
+	//	}
+	//}
+
+	//SetBase(0,0);    //zeroing motors
+	//wait1Msec(100);
+
+	////robot moves cloesr to the fence
+	//while(SensorValue(middle) > 400/*adjust value*/)
+	//{
+	//	SetBase(-35,-35);
+	//}
+	//SetBase(0,0);
+
+	////fire cube
+	//ArmState = 5;  //sets arm to fire
+	//while(!(SensorValue[armPot] < (ArmTopAngle + 100) && SensorValue[armPot] > (ArmTopAngle - 100))){} // Wait until state
+
+	////Releases Cube
+	//ClawState = 5;
+	//while(!((SensorValue[clawLPot] < (ClawLFullOpen + 100) && SensorValue[clawLPot] > (ClawLFullOpen - 100)) &&
+	//	(SensorValue[clawRPot] < (ClawRFullOpen + 100) && SensorValue[clawRPot] > (ClawRFullOpen - 100)))){} // Wait until state
+
+	////brings lift back down
+	//ArmState = 2;  //atate brings arm down
+	//while(!(SensorValue[armPot] < (ArmDownAngle + 100) && SensorValue[armPot] > (ArmDownAngle - 100))){} // Wait until state
+
+	////it should back up a little bit
+	//int targetL;   // find wht target value we should use
+	//while(SensorValue[encoderL] <  targetL)
+	//{
+	//	SetBase(50,50);
+
+	//}
+
+	////drives back to pik stars
+	//while(SensorValue[centerback] > 400)
+	//{
+	//	SetBase(50,50);
+	//}
+
+	//wait1Msec(100);
+
+	////claw closing
+	//ClawState = 2;
+	//while(!((SensorValue[clawLPot] < (CloseLAngle + 100) && SensorValue[clawLPot] > (CloseLAngle - 100)) &&
+	//	(SensorValue[clawRPot] < (CloseRAngle + 100) && SensorValue[clawRPot] > (CloseRAngle - 100)))){} // Wait until state
+	////arm raising
+	//ArmState = 4;
+	//while(!(SensorValue[armPot] < (ArmHighAngle + 100) && SensorValue[armPot] > (ArmHighAngle - 100))){} // Wait until state
+
+	////drive up to line again
+	//while(SensorValue(rightback) > 400 /*adjust value*/&& SensorValue(leftback) > 400/*adjust value*/){
+	//	SetBase(-40,-40);
+
+	//	if(SensorValue(rightback) < 400/*adjust value*/ && SensorValue(leftback) > 400/*adjust value*/)
+	//	{  while(SensorValue(leftback) > 400){
+	//			SetBase(-30,0);
+	//		}
+	//	}
+	//	if(SensorValue(rightback) > 400/*adjust value*/ && SensorValue(leftback) < 400/*adjust value*/)
+	//	{  while(SensorValue(rightback) > 400){
+	//			SetBase(0,-30);
+	//		}
+	//	}
+	//}
+
+	//while(SensorValue(leftback) > 400/*adjust value*/)
+	//{
+	//	SetBase(-35,-35);
+	//}
+	//SetBase(0,0);
+
+	////firing stars
+	//ArmState = 5;
+	//while(!(SensorValue[armPot] < (ArmTopAngle + 100) && SensorValue[armPot] > (ArmTopAngle - 100))){} // Wait until state
+
+	//// Releases Stars
+	//ClawState = 5;
+	//while(!((SensorValue[clawLPot] < (ClawLFullOpen + 100) && SensorValue[clawLPot] > (ClawLFullOpen - 100)) &&
+	//	(SensorValue[clawRPot] < (ClawRFullOpen + 100) && SensorValue[clawRPot] > (ClawRFullOpen - 100)))){} // Wait until state
+
+	////Lowers Arm
+	//ArmState = 2;
+	//while(!(SensorValue[armPot] < (ArmDownAngle + 100) && SensorValue[armPot] > (ArmDownAngle - 100))){}//brings claw down
+
+	////for now end autonomous;
 }
 
 task usercontrol()
@@ -731,6 +897,10 @@ task usercontrol()
 	int rightPower = 0;
 	while (true)
 	{
+	//	if(vexRT(Btn8D))
+	//	{
+	//		autonomous1();
+	//}
 		leftPower 	= vexRT[Ch3] + vexRT[Ch1];
 		rightPower 	= vexRT[Ch3] - vexRT[Ch1];
 		SetBase(leftPower,rightPower);
