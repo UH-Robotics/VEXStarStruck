@@ -33,7 +33,7 @@
 // Select Download method as "competition"
 #pragma competitionControl(Competition)
 
-//Main competition background code...do not modify!
+// Main competition background code...do not modify!
 #include "Vex_Competition_Includes.c"
 
 // Prototypes
@@ -42,80 +42,80 @@ void SetBase(int powerL, int powerR);
 void SetArm(int power);
 
 // Pot calibration
-//C: Did anything used to go here
+// C: Did anything used to go here
 
-//Variables
-//Claw variables
+// Variables
+// Claw variables
 int ClawLCalibrate = 97 - 90; //97 - calibrated value. difference from full closed value: (touching motor)
 int ClawRCalibrate = 40; //4060 - calibrated value. difference form full closed value: + means bigger number
 int ClawState = 9;                         // 0 - open, 1 - semi-closed, 2 - closed
-int CloseLAngle = 820+ClawLCalibrate;                 //the angle the claw is closed
-int CloseRAngle = 3100+ClawRCalibrate;                 //the angle the claw is closed
-int ClawLSemicloseAngle = 1900+ClawLCalibrate;//the angle the claw stays at in intake pos
+int CloseLAngle = 820+ClawLCalibrate;                 // The angle the claw is closed
+int CloseRAngle = 3100+ClawRCalibrate;                 // The angle the claw is closed
+int ClawLSemicloseAngle = 1900+ClawLCalibrate;// The angle the claw stays at in intake pos
 int ClawRSemicloseAngle = 2120+ClawRCalibrate;
-int ClawLOpen = 1900+ClawLCalibrate;                     //Angle claw is fully open
+int ClawLOpen = 1900+ClawLCalibrate;                     // Angle claw is fully open
 int ClawROpen = 1600+ClawRCalibrate;
-int ClawLFullOpen = 1900+ClawLCalibrate;             //If we get Stuck, we can fully open the claw
+int ClawLFullOpen = 1900+ClawLCalibrate;             // If we get Stuck, we can fully open the claw
 int ClawRFullOpen = 1600+ClawRCalibrate;
-int CustomAngleL = 0+ClawLCalibrate; //If we want different/custom angles
+int CustomAngleL = 0+ClawLCalibrate; // If we want different/custom angles
 int CustomAngleR = 0+ClawRCalibrate;
 
-//PID/stalls
-int ClosePower = 70;//127                 // the test value for stall detect
-int ClawStallPower = 70;//60             //power after stall
-int ClawStallTime = 1500;//1000             //if the claw is not moving for this time, go to low power
-float ClawP = .4;//.1?     //P value for claw PID
+// PID/stalls
+int ClosePower = 70;//127                 // The test value for stall detect
+int ClawStallPower = 70;//60             // Power after stall
+int ClawStallTime = 1500;//1000             // If the claw is not moving for this time, go to low power
+float ClawP = .4; //.1?     // P value for claw PID
 /*** Diff
-float ClawP = .2;//.1?     //P value for claw PID
+float ClawP = .2; //.1?     // P value for claw PID
 ***/
-float ClawD = .001;//.001     // D value for PID
+float ClawD = .001; //.001     // D value for PID
 float ClawI = .005; //.015
-float ClawFineP = 1;//.2 //when error gets close to 0, this takes over
+float ClawFineP = 1; //.2 // When error gets close to 0, this takes over
 /*** Diff
-float ClawFineP = .4;//.2 //when error gets close to 0, this takes over
+float ClawFineP = .4;//.2 // When error gets close to 0, this takes over
 ***/
-int     ClawFinePLimit = 10; //15 // this is the max power Fine motor can provide
+int     ClawFinePLimit = 10; //15 // This is the max power Fine motor can provide
 float ClawFineOffset = (ClawFineP==0?0:ClawFinePLimit-(ClawFinePLimit/ClawFineP*ClawP));
-int     PILimit = 65;//60 // the limit of the total power P+I can provide
+int     PILimit = 65;//60 // The limit of the total power P+I can provide
 
 //Arm Variables##############################################################
-int ArmState = 9;         // disabled
-int ArmCalibrate = 0; //2810 is zero position
-float ArmP = .12;      //.1?     //P value for claw PID
-float ArmD = .000;    //.006     // D value for PID
+int ArmState = 9;         // Disabled
+int ArmCalibrate = 0;   //2810 is zero position
+float ArmP = .12;       //.1?     // P value for claw PID
+float ArmD = .000;      //.006    // D value for PID
 /*** Diff
-float ArmP = .8;        //.1?     //P value for claw PID
-float ArmD = .002;    //.006     // D value for PID
+float ArmP = .8;        //.1?     // P value for claw PID
+float ArmD = .002;      //.006    // D value for PID
 ***/
 float ArmI = .0025;     //.0025
-float ArmFineP = .1;    //.08 //when error gets close to 0, this takes over
-int ArmFinePLimit = 75; //12 // this is the max power Fine motor can provide
+float ArmFineP = .1;    //.08     // When error gets close to 0, this takes over
+int ArmFinePLimit = 75; //12      // This is the max power Fine motor can provide
 /*** Diff
-float ArmFineP = .2;    //.08 //when error gets close to 0, this takes over
-int ArmFinePLimit = 8; //12 // this is the max power Fine motor can provide
+float ArmFineP = .2;    //.08     // When error gets close to 0, this takes over
+int ArmFinePLimit = 8;  //12      // This is the max power Fine motor can provide
 ***/
 float ArmFineOffset = (ArmFineP==0?0:ArmFinePLimit-(ArmFinePLimit/ArmFineP*ArmP));
-int ArmPILimit = 45;    //60 // the limit of the total power P+I can provide
+int ArmPILimit = 45;    //60 // The limit of the total power P+I can provide
 int ArmStallPower = 50; //60
 int ArmStallDetect = 50;//60
 int ArmStallTime = 1000;//1000 in milliseconds
 int FireDetectAngle = 2800+ArmCalibrate; //2880 the angle it will consider the
 int FireExpireTime = 1500; //1500 if it is firing for longer than this amount of time, firing stops
-int FireOverdriveTime = 20; // 60number of milliseconds it will keep driving arm after it reached fire angle
+int FireOverdriveTime = 20; //60 number of milliseconds it will keep driving arm after it reached fire angle
 bool ArmFired = false;
 // Arm angles
-int CustomAngle     = 2770;     //Custom arm angle
-int ArmDownAngle    = 960+ArmCalibrate;//intake angle
+int CustomAngle     = 2770; // Custom arm angle
+int ArmDownAngle    = 960+ArmCalibrate; // Intake angle
 int ArmPrimeAngle = 1400+ArmCalibrate; //1070 just above the ground
-int ArmHighAngle     = 1690+ArmCalibrate;//just a fun angle for w/e
-int ArmTopAngle     = 2940+ArmCalibrate;//after firing it will go here
+int ArmHighAngle     = 1690+ArmCalibrate;// Just a fun angle for w/e
+int ArmTopAngle     = 2940+ArmCalibrate;// After firing it will go here
 
 // Functions
 
 // Function to make code go a certain distance
 void driveDistance(int target, int power)
 {
-    // Settting sensors to zero
+    // Setting sensors to zero
     SensorValue[encoderR] = 0;
     SensorValue[encoderL] = 0;
 
@@ -206,11 +206,11 @@ task clawTask() // This manages the PID on the robot
     //int avgDErrorL = 0;
     //int avgDErrorR = 0;
     //int logPos = 0;
-    int accErrorL = 0;//accumulated error for Integral
+    int accErrorL = 0; // Accumulated error for Integral
     int accErrorR = 0;
     bool enablePID = false;
 
-    //stall timing
+    // Stall timing
     bool stalledL = false;
     bool stalledR = false;
     int stallTimeL = 0;
@@ -218,16 +218,16 @@ task clawTask() // This manages the PID on the robot
 
     while (true)
     {
-        //updates values
+        // Updates values
         potentiometerL = SensorValue[clawLPot];
         potentiometerR = SensorValue[clawRPot];
         currentTime = time1[T1];
         dTime = currentTime - lastTime;
 
-        errorL = -clawLTarget + potentiometerL; //Updating errors (difference between target and true pos, negative is more open)
+        errorL = -clawLTarget + potentiometerL; // Updating errors (difference between target and true pos, negative is more open)
         errorR = +clawRTarget - potentiometerR;
         // If this is the first loop iteration, do this!
-        if (ClawState != 0) // This really doesn't mean much. only for the first state change where dError would be big otherwise
+        if (ClawState != 0) // This really doesn't mean much. Only for the first state change where dError would be big otherwise
         {
             switch (ClawState) // Sets targets
             {
@@ -304,15 +304,41 @@ task clawTask() // This manages the PID on the robot
         {
             accErrorR+=errorR;
         }
-        /*** Wow
+        /*** Did I de-nest this correctly?
         clawPowerL = (abs(errorL*ClawFineP)<ClawFinePLimit? errorL*ClawFineP:(errorL*ClawP+(errorL>0?ClawFineOffset:-ClawFineOffset))) + dErrorL*ClawD + accErrorL*ClawI; //claw power according to the PIDs
         clawPowerR = (abs(errorR*ClawFineP)<ClawFinePLimit? errorR*ClawFineP:(errorR*ClawP+(errorR>0?ClawFineOffset:-ClawFineOffset))) + dErrorR*ClawD + accErrorR*ClawI; // attempt to filter stuff
         ***/
-        if (abs(errorL*ClawFineP)<ClawFinePLimit)
+        if ( abs(errorL * ClawFineP) < ClawFinePLimit )
         {
-
+            clawPowerL = errorL * ClawFineP
+        }
+        else if (errorL > 0)
+        {
+            clawPowerL = errorL * ClawP + ClawFineOffset
+        }
+        else
+        {
+            clawPowerL = erorrL * ClawP - ClawFineOffset
+        }
         
-        //----------------------------logging
+        ClawPowerL += (dErrorL * ClawD) + (accErrorL * ClawI);
+
+        if ( abs(errorR * ClawFineP) < ClawFinePLimit )
+        {
+            clawPowerR = errorR * ClawFineP
+        }
+        else if ( errorR > 0 )
+        {
+            clawPowerR = errorR * ClawP + ClawFineOffset
+        }
+        else
+        {
+            clawPowerR = errorR + ClawP - ClawFineOffset
+        }
+
+        clawPowerR += (dErrorR * ClawD) + (accErrorR * ClawI)
+
+        /*-------------------Logging-------------------*/
         //writeDebugStreamLine("Claw Power L: %d\nClaw Power R: %d",clawPowerL,clawPowerR);
         //datalogDataGroupStart();
         //datalogAddValue(0,motor[clawL]);
@@ -320,7 +346,8 @@ task clawTask() // This manages the PID on the robot
         //datalogAddValue(2,errorL);
         //datalogAddValue(3,errorR);
         //datalogDataGroupEnd();
-        //Stall stuff------------------------------
+
+        /*-------------------Stall stuff-------------------*/
         if(abs(clawPowerL)> ClosePower)//checking whether motors are stalling
         {
             stallTimeL+=dTime;
@@ -348,33 +375,33 @@ task clawTask() // This manages the PID on the robot
             stallTimeR = 0;
         }
 
-//Setting motor power ------------------------------------------------
-        if(!enablePID)//If PID disbaled
+        /*-------------------Setting motor power-------------------*/
+        if ( !enablePID ) // If PID disbaled
         {
             SetClawL(0);
         }
-        else if(stalledL)//If stalled, it will run at max stall power
+        else if ( stalledL ) // If stalled, it will run at max stall power
         {
             SetClawL(clawPowerL>0?ClawStallPower:-ClawStallPower);
         }
-        else// Setting the powers to the motors.
+        else // Setting the powers to the motors.
         {
             SetClawL(clawPowerL);
         }
-        if(!enablePID)//If PID disbaled
+        if ( !enablePID ) // If PID disbaled
         {
             SetClawR(0);
         }
-        else if(stalledR)//If stalled, it will run at max stall power
+        else if ( stalledR ) // If stalled, it will run at max stall power
         {
-            SetClawR(clawPowerR>0?ClawStallPower:-ClawStallPower);
+            SetClawR(clawPowerR > 0 ? ClawStallPower : -ClawStallPower);
         }
-        else// Setting the powers to the motors.
+        else // Setting the powers to the motors
         {
             SetClawR(clawPowerR);
         }
 
-        //final updates
+        /*-------------------Logging - final updates-------------------*/
         //logPos++;
         //if (logPos==sizeof(dErrorLLog)/sizeof(dErrorLLog[0]))
         //{
@@ -388,41 +415,43 @@ task clawTask() // This manages the PID on the robot
         wait1Msec(20);
     }
 }
-task armTask()//#################################################################################
+
+
+task armTask() // #################################################################################
 {
-    //declarations
+    // Declarations
     int currentTime = 0;
     int lastTime = 0;
     int dTime = 0;
     int error = 0;
     int lastError = 0;
     int dError = 0;
-    int accError = 0;//accumulated error for Integral
+    int accError = 0; // Accumulated error for Integral
     int armTarget = 0;
     int armPower = 0;
     int armPotentiometer = 0;
     int stallTime = 0;
-    int armState = 0; //this is the local state (if this isn't there, there is a 1 in 40 chance that the command won't execute)
-    //firing
-    int fireTargetTime = 0; // for timeout
-    bool fire = false; // tells the code that the fire macro has been called
+    int armState = 0; // This is the local state (if this isn't there, there is a 1 in 40 chance that the command won't execute)
+    // Firing
+    int fireTargetTime = 0; // For timeout
+    bool fire = false; // Tells the code that the fire macro has been called
     bool stalled = false;
     bool enablePID = false;
 
-    //average Derrors
+    // Average Derrors
     int logPos = 0;
     int dErrorAvg = 0;
     int dErrorLog[] = {0,0,0,0,0,0,0,0,0,0};
 
     while (true)
     {
-        //Updates
+        // Updates
         armState = ArmState;
         if (armState != 0) // 0 is the "State is up to date - state. Once the variables are updated in the code, state will go back to 1
         {
-            switch (armState) //sets targets
+            switch (armState) // Sets targets
             {
-            case 1: //custom angle
+            case 1: // Custom angle
                 armTarget = CustomAngle;
                 fire = false;
                 enablePID = true;
@@ -452,9 +481,9 @@ task armTask()//################################################################
                 fire = false;
                 break;
             }
-            stallTime = 0; //time before stall is true
-            stalled = false; //limits motor power
-            //accError = 0; // we don't what to reset this because we don't want it to forget the rubber band correction
+            stallTime = 0; // Time before stall is true
+            stalled = false; // Limits motor power
+            //accError = 0; // We don't what to reset this because we don't want it to forget the rubber band correction
             dErrorAvg = 0;
             dErrorLog[0]=dErrorLog[1]=dErrorLog[2]=dErrorLog[3]=dErrorLog[4]=dErrorLog[5]=dErrorLog[6]=dErrorLog[7]=dErrorLog[8]=dErrorLog[9]= 0;
             lastError = armTarget - SensorValue[armPot];
@@ -469,20 +498,20 @@ task armTask()//################################################################
         dError = (error - lastError)*(dTime>0?1000/dTime:0);
 
 //PID addition part
-        if ((abs(accError)>abs(accError+error)) ) //if acc error will be reduced
+        if ((abs(accError)>abs(accError+error)) ) // If acc error will be reduced
         {
             accError+= error;
         }
-        else if ((abs(error*ArmP + accError*ArmI)+ArmFineOffset)<=ArmPILimit)//if the motor output is less than the cap, you can accumulate
+        else if ((abs(error*ArmP + accError*ArmI)+ArmFineOffset)<=ArmPILimit)// If the motor output is less than the cap, you can accumulate
         {
             accError+=error;
         }
         armPower = (abs(error*ArmFineP)<ArmFinePLimit? error*ArmFineP:(error*ArmP+(error>0?ArmFineOffset:-ArmFineOffset))) + dErrorAvg*ArmD + accError*ArmI; //arm power according to the PIDs
 //Stall Check
-        if(abs(armPower)> ArmStallDetect)//checking whether motors are stalling
+        if(abs(armPower)> ArmStallDetect)// Checking whether motors are stalling
         {
             stallTime+=dTime;
-            if(stallTime>ArmStallTime) //updates stalleL state
+            if(stallTime>ArmStallTime) // Updates stalleL state
             {
                 stalled = true;
             }
@@ -501,29 +530,30 @@ task armTask()//################################################################
         {
             fireTargetTime = currentTime+FireOverdriveTime;
         }
-        //datalogDataGroupStart(); ------------------  datalogging
+        /*------------------Data Logging-----------------*/
+        //datalogDataGroupStart(); 
         //datalogAddValue(0,motor[lift1]);
         //datalogAddValue(1,dError);
         //datalogAddValue(2,dErrorAvg);
         //datalogDataGroupEnd();
-        //Setting motor powers
+        //Setting motor powers /* 
         if (!enablePID)
         {
             SetArm(0);
         }
-        else if(fire)
+        else if (fire)
         {
             SetArm(127);
         }
-        else if(stalled)//If stalled, it will run at max stall power
+        else if (stalled) // If stalled, it will run at max stall power
         {
             SetArm(armPower>0?ArmStallPower:-ArmStallPower);
         }
-        else// Setting the power to the motors.
+        else // Setting the power to the motors.
         {
             SetArm(armPower);
         }
-        if (fire && currentTime>fireTargetTime)
+        if (fire && currentTime > fireTargetTime)
         {
             fire = false;
             ArmFired = true;
@@ -578,26 +608,20 @@ task driveManager()
             ArmState = 5;
         }
 
-        //this will manage the inputs from the driver and decide what state to put everything on the robot
+        // This will manage the inputs from the driver and decide what state to put everything on the robot
         wait1Msec(20);
     }
 }
 
 /*----------------To do list------------------*/
-/*calculate distance to fence so we can go back the exact same distance
-fix the drive distance functionn
-fix the parameters in the drive distance function*/
+/*
+ * calculate distance to fence so we can go back the exact same distance
+ * fix the drive distance functionn
+ * fix the parameters in the drive distance function
+*/
 
-
-
-
-
-
-
-//
-
-task autonomous(){
-
+task autonomous()
+{
     clearDebugStream();
     datalogClear();
     clearTimer(T1);
@@ -605,13 +629,13 @@ task autonomous(){
     wait1Msec(5);
     startTask(armTask);
 
-    ////claw opening
+    // Claw opening
 
     ClawState = 5;
     while(!((SensorValue[clawLPot] < (ClawLFullOpen + 100) && SensorValue[clawLPot] > (ClawLFullOpen - 100)) &&
         (SensorValue[clawRPot] < (ClawRFullOpen + 100) && SensorValue[clawRPot] > (ClawRFullOpen - 100)))){} // Wait until state
 
-    ArmState = 1;  //raise arms up
+    ArmState = 1;  // Raise arms up
     while(!(SensorValue[armPot] < (CustomAngle + 100) && SensorValue[armPot] > (CustomAngle - 100))){} // Wait until state
 
     ArmState = 9;
@@ -629,7 +653,7 @@ task autonomous(){
     wait1Msec(100);
     SensorValue[encoderL] = SensorValue[encoderR] = 0;
 
-    //move foward
+    // Move foward
     int firstdrive = 500;
     int encR = 600;
 
@@ -649,7 +673,7 @@ task autonomous(){
     wait1Msec(200);
     SensorValue[encoderL] = SensorValue[encoderR] = 0;
 
-    //turn horizintal
+    // Turn horizintal
     while(Sensorvalue[encoderR] < 470){
         SetBase(-40,40);
 
@@ -671,12 +695,15 @@ task autonomous(){
 
         wait1Msec(1000)
 
-        //bad very baaaaad
+        // Bad very baaaaad
         //SetBase(0,0);
 
 
-      ArmState = 1;  //raise arms up
-    while(!(SensorValue[armPot] < (CustomAngle + 100) && SensorValue[armPot] > (CustomAngle - 100))){}
+      ArmState = 1;  // Raise arms up
+    while( !(SensorValue[armPot] < (CustomAngle + 100) && SensorValue[armPot] > (CustomAngle - 100)) )
+    {
+        //C: Why is this here?
+    }
 
 
 
