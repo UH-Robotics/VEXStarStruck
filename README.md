@@ -1,3 +1,4 @@
+![Competition Field](http://nyitowieee.weebly.com/uploads/6/1/3/7/61379853/3755133_orig.png)
 # VEXStarStruck
 This repository is a for the development and archival of the IEEE UH Robotics 2016-2017 VEX Competion robot. To be able to pull, push, or commit to this repository, please contact @PiesAreCircle or @JavGG95 for entry.
 
