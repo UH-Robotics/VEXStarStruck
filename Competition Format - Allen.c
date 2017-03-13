@@ -30,14 +30,9 @@
 #include "Vex_Competition_Includes.c"
 
 //Predeclarations
-task clawTask();
-void SetBase(int powerL, int powerR);
-void SetArm(int power);
 void blockAuton();
 
-// Pot calibration
-
-//Variables
+/*Variables*/
 //Claw variables
 int ClawLCalibrate = 97 - 90; //97 - calibrated value. difference from full closed value: (touching motor)
 int ClawRCalibrate = 40; //4060 - calibrated value. difference form full closed value: + means bigger number
@@ -53,7 +48,7 @@ int ClawRFullOpen = 1600+ClawRCalibrate;
 int CustomAngleL = 0+ClawLCalibrate; //If we want different/custom angles
 int CustomAngleR = 0+ClawRCalibrate;
 
-//PID/stalls
+//PID stalls
 int ClosePower = 70;//127 				// the test value for stall detect
 int ClawStallPower = 70;//60 			//power after stall
 int ClawStallTime = 1500;//1000 			//if the claw is not moving for this time, go to low power
@@ -89,53 +84,11 @@ int ArmPrimeAngle = 1400+ArmCalibrate; //1070 just above the ground
 int ArmHighAngle 	= 1690+ArmCalibrate;//just a fun angle for w/e
 int ArmTopAngle 	= 2940+ArmCalibrate;//after firing it will go here
 
+bool hasObject = false;
+
 //functions
+void pre_auton(){bStopTasksBetweenModes = true;}
 
-//function to make code go a certain distance
-void driveDistance(int target, int power){
-	//settting sensors to zero
-	SensorValue[encoderR] = 0;
-	SensorValue[encoderL] = 0;
-
-
-	//the right encoder will be used to measure distance
-
-	int senL =  SensorValue[encoderL];
-	int senR =  SensorValue[encoderR];
-	int sensor = SensorValue[encoderR];
-	while(sensor < target){
-		motor[baseL1]=power;
-		motor[baseL2]=power;
-		motor[baseR1]=power;
-		motor[baseR2]=power;
-
-		if(senL > senR)
-		{
-			SensorValue[encoderR] = senL;
-			sensor = senL;
-		}
-		if(senL < senR)
-		{
-			SensorValue[encoderL] = senR;
-			sensor = senR;
-		}
-		if(senL == senR)
-		{
-			sensor = senR;
-		}
-
-	}
-	motor[baseL1]=0;
-	motor[baseL2]=0;
-	motor[baseR1]=0;
-	motor[baseR2]=0;
-}
-
-
-void pre_auton()
-{
-	bStopTasksBetweenModes = true;
-}
 void SetBase(int powerL, int powerR)
 {
 	motor[baseL1]=powerL;
@@ -144,6 +97,7 @@ void SetBase(int powerL, int powerR)
 	motor[baseR2]=powerR;
 	return;
 }
+
 void SetArm(int power)
 {
 	motor[lift1]=power;
@@ -151,14 +105,9 @@ void SetArm(int power)
 	motor[lift3]=power;
 	motor[lift4]=power;
 }
-void SetClawL(int powerL)
-{
-	motor[clawL] = powerL;
-}
-void SetClawR(int powerR)
-{
-	motor[clawR] = powerR;
-}
+
+void SetClawL(int powerL) {motor[clawL] = powerL;}
+void SetClawR(int powerR) {motor[clawR] = powerR;}
 
 //tasks
 task clawTask() //this just manages the PID on the robot
@@ -180,9 +129,6 @@ task clawTask() //this just manages the PID on the robot
 	int dErrorR = 0;
 	int dErrorLLog[] = {0,0,0,0};
 	int dErrorRLog[] = {0,0,0,0};
-	//int avgDErrorL = 0;
-	//int avgDErrorR = 0;
-	//int logPos = 0;
 	int accErrorL = 0;//accumulated error for Integral
 	int accErrorR = 0;
 	bool enablePID = false;
@@ -200,11 +146,10 @@ task clawTask() //this just manages the PID on the robot
 		potentiometerR = SensorValue[clawRPot];
 		currentTime = time1[T1];
 		dTime = currentTime - lastTime;
-
 		errorL = -clawLTarget + potentiometerL; //Updating errors (difference between target and true pos, negative is more open)
 		errorR = +clawRTarget - potentiometerR;
 		//first run in this state? do this!
-		if (ClawState != 0) //this really doesn't mean much. only for the first state change where dError would be big otherwise
+		if (ClawState != 0)
 		{
 			switch (ClawState) //sets targets
 			{
@@ -246,70 +191,41 @@ task clawTask() //this just manages the PID on the robot
 			stallTimeL = 0;
 			stallTimeR = 0;
 		}
-
 		// dError calculation
 		dErrorL = (errorL - lastErrorL)*(dTime>0?1000/dTime:0); //the speed over the last time period in pot ticks per sec
 		dErrorR = (errorR - lastErrorR)*(dTime>0?1000/dTime:0);
-		//dErrorLLog[logPos] = dErrorL; // trying to filter bad values
-		//dErrorRLog[logPos] = dErrorR;
-		//avgDErrorL = dErrorLLog[0];
-		//avgDErrorR = dErrorRLog[0];
-		//for (int x = 1; x<(sizeof(dErrorLLog)/sizeof(dErrorLLog[0])); ++x)// finding the minimum dError
-		//{
-		//	avgDErrorL += dErrorLLog[x]; //= (abs(avgDErrorL)<abs(dErrorLLog[x]))?avgDErrorL:dErrorLLog[x];	//min dErrorL value
-		//	avgDErrorR += dErrorRLog[x]//= (abs(avgDErrorR)<abs(dErrorRLog[x]))?avgDErrorR:dErrorRLog[x];; //min R value
-		//}
-		//avgDErrorL = avgDErrorL/(sizeof(dErrorLLog)/sizeof(dErrorLLog[0]));
-		//avgDErrorR = avgDErrorR/(sizeof(dErrorLLog)/sizeof(dErrorLLog[0]));
 
 		//Integral addition
-		if ((abs(accErrorL)>abs(accErrorL+errorL))) //if acc error will be reduced
-		{
-			accErrorL+= errorL;
-		}
+		if ((abs(accErrorL)>abs(accErrorL+errorL))) {accErrorL+= errorL;}//if acc error will be reduced
 		else if ((abs(errorL*ClawP + accErrorL*ClawI)+ClawFineOffset)<=PILimit)//if the motor output is less than the cap, you can accumulate)
 		{
 			accErrorL+=errorL;
 		}
-		if ((abs(accErrorR)>abs(accErrorR+errorR))  ) //if acc error will be reduced
-		{
-			accErrorR+= errorR;
-		}
+
+		if ((abs(accErrorR)>abs(accErrorR+errorR))) {accErrorR+= errorR;}//if acc error will be reduced
 		else if ((abs(errorR*ClawP + accErrorR*ClawI)+ClawFineOffset)<=PILimit)//if the motor output is less than the cap, you can accumulate)
 		{
 			accErrorR+=errorR;
 		}
 		clawPowerL = (abs(errorL*ClawFineP)<ClawFinePLimit? errorL*ClawFineP:(errorL*ClawP+(errorL>0?ClawFineOffset:-ClawFineOffset))) + dErrorL*ClawD + accErrorL*ClawI; //claw power according to the PIDs
 		clawPowerR = (abs(errorR*ClawFineP)<ClawFinePLimit? errorR*ClawFineP:(errorR*ClawP+(errorR>0?ClawFineOffset:-ClawFineOffset))) + dErrorR*ClawD + accErrorR*ClawI; // attempt to filter stuff
-		//----------------------------logging
-		//writeDebugStreamLine("Claw Power L: %d\nClaw Power R: %d",clawPowerL,clawPowerR);
-		//datalogDataGroupStart();
-		//datalogAddValue(0,motor[clawL]);
-		//datalogAddValue(1,motor[clawR]);
-		//datalogAddValue(2,errorL);
-		//datalogAddValue(3,errorR);
-		//datalogDataGroupEnd();
+
 		//Stall stuff------------------------------
 		if(abs(clawPowerL)> ClosePower)//checking whether motors are stalling
 		{
 			stallTimeL+=dTime;
-			if(stallTimeL>ClawStallTime) //updates stalleL state
-			{
-				stalledL = true;
-			}
+			if(stallTimeL>ClawStallTime) {stalledL = true;}//updates stalleL state
 		}
 		else
 		{
 			stalledL = false;
 			stallTimeL = 0;
 		}
+
 		if(abs(clawPowerR) > ClosePower) //checking whether motors are stalling
 		{
 			stallTimeR+=dTime;
-			if(stallTimeR>ClawStallTime)//updates stalleR state
-			{
-				stalledR = true;
-			}
+			if(stallTimeR>ClawStallTime) {stalledR = true;}//updates stalleR state
 		}
 		else
 		{
@@ -318,39 +234,21 @@ task clawTask() //this just manages the PID on the robot
 		}
 
 		//Setting motor power ------------------------------------------------
-		if(!enablePID)//If PID disbaled
-		{
-			SetClawL(0);
-		}
-		else if(stalledL)//If stalled, it will run at max stall power
-		{
-			SetClawL(clawPowerL>0?ClawStallPower:-ClawStallPower);
-		}
-		else// Setting the powers to the motors.
-		{
+		if(!enablePID){SetClawL(0);
+			hasObject = false;}//If PID disbaled
+		else if(stalledL){SetClawL(clawPowerL>0?ClawStallPower:-ClawStallPower);
+			hasObject = true;}//If stalled, it will run at max stall power
+		else{
 			SetClawL(clawPowerL);
-		}
-		if(!enablePID)//If PID disbaled
-		{
-			SetClawR(0);
-		}
-		else if(stalledR)//If stalled, it will run at max stall power
-		{
-			SetClawR(clawPowerR>0?ClawStallPower:-ClawStallPower);
-		}
-		else// Setting the powers to the motors.
-		{
-			SetClawR(clawPowerR);
-		}
+			hasObject = false;}// Setting the powers to the motors.
 
-		//final updates
-		//logPos++;
-		//if (logPos==sizeof(dErrorLLog)/sizeof(dErrorLLog[0]))
-		//{
-		//	logPos = 0;
-		//}
-		//dErrorLLog[logPos] = dErrorL;
-		//dErrorRLog[logPos] = dErrorR;
+		if(!enablePID){SetClawR(0);
+			hasObject = false;}//If PID disbaled
+		else if(stalledR){SetClawR(clawPowerR>0?ClawStallPower:-ClawStallPower);
+			hasObject = true;}//If stalled, it will run at max stall power
+		else{SetClawR(clawPowerR);
+			hasObject = false;}// Setting the powers to the motors.
+
 		lastErrorL = errorL;
 		lastErrorR = errorR;
 		lastTime = time1[T1];
@@ -423,7 +321,6 @@ task armTask()//################################################################
 			}
 			stallTime = 0; //time before stall is true
 			stalled = false; //limits motor power
-			//accError = 0; // we don't what to reset this because we don't want it to forget the rubber band correction
 			dErrorAvg = 0;
 			dErrorLog[0]=dErrorLog[1]=dErrorLog[2]=dErrorLog[3]=dErrorLog[4]=dErrorLog[5]=dErrorLog[6]=dErrorLog[7]=dErrorLog[8]=dErrorLog[9]= 0;
 			lastError = armTarget - SensorValue[armPot];
@@ -447,14 +344,13 @@ task armTask()//################################################################
 			accError+=error;
 		}
 		armPower = (abs(error*ArmFineP)<ArmFinePLimit? error*ArmFineP:(error*ArmP+(error>0?ArmFineOffset:-ArmFineOffset))) + dErrorAvg*ArmD + accError*ArmI; //arm power according to the PIDs
+
 		//Stall Check
 		if(abs(armPower)> ArmStallDetect)//checking whether motors are stalling
 		{
 			stallTime+=dTime;
-			if(stallTime>ArmStallTime) //updates stalleL state
-			{
-				stalled = true;
-			}
+			if(stallTime>ArmStallTime) {stalled = true;}//updates stalleL state
+
 		}
 		else
 		{
@@ -470,11 +366,7 @@ task armTask()//################################################################
 		{
 			fireTargetTime = currentTime+FireOverdriveTime;
 		}
-		//datalogDataGroupStart(); ------------------  datalogging
-		//datalogAddValue(0,motor[lift1]);
-		//datalogAddValue(1,dError);
-		//datalogAddValue(2,dErrorAvg);
-		//datalogDataGroupEnd();
+
 		//Setting motor powers
 		if (!enablePID)
 		{
@@ -574,9 +466,12 @@ task autonomous(){
 	wait1Msec(5);
 	startTask(armTask);
 
-	blockAuton();
+	//blockAuton();
 
-
+	/* Open Claw to Start */
+	ClawState = 5;
+	while(!((SensorValue[clawLPot] < (ClawLFullOpen + 100) && SensorValue[clawLPot] > (ClawLFullOpen - 100)) &&
+		(SensorValue[clawRPot] < (ClawRFullOpen + 100) && SensorValue[clawRPot] > (ClawRFullOpen - 100)))){} // Wait until state
 
 
 	//wait1Msec(200);
@@ -655,12 +550,6 @@ task autonomous(){
 	//	SetBase(-30,-30);
 	//}
 	//SetBase(0,0)
-
-
-
-
-
-
 
 	//wait10Msec(500);
 
@@ -857,7 +746,6 @@ void blockAuton() {
 
 	wait1Msec(200);
 	SensorValue[encoderL] = SensorValue[encoderR] = 0;
-
 
 	while(SensorValue[encoderR] < 470){ //turn 90 Degrees
 		SetBase(-40,40);
