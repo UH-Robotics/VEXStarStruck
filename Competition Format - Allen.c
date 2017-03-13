@@ -32,7 +32,7 @@
 //Predeclarations
 void blockAuton();
 
-/*Variables*/
+/* Variables */
 //Claw variables
 int ClawLCalibrate = 97 - 90; //97 - calibrated value. difference from full closed value: (touching motor)
 int ClawRCalibrate = 40; //4060 - calibrated value. difference form full closed value: + means bigger number
@@ -45,7 +45,7 @@ int ClawLOpen = 1900+ClawLCalibrate; 					//Angle claw is fully open
 int ClawROpen = 1600+ClawRCalibrate;
 int ClawLFullOpen = 1900+ClawLCalibrate; 			//If we get Stuck, we can fully open the claw
 int ClawRFullOpen = 1600+ClawRCalibrate;
-int CustomAngleL = 0+ClawLCalibrate; //If we want different/custom angles
+int CustomAngleL = 0+ClawLCalibrate; 					//If we want different/custom angles
 int CustomAngleR = 0+ClawRCalibrate;
 
 //PID stalls
@@ -78,11 +78,11 @@ int FireExpireTime = 1500; //1500 if it is firing for longer than this amount of
 int FireOverdriveTime = 20; // 60number of milliseconds it will keep driving arm after it reached fire angle
 bool ArmFired = false;
 // arm angles
-int CustomAngle 	= 2770; 	//Custom arm angle
-int ArmDownAngle	= 960+ArmCalibrate;//intake angle
-int ArmPrimeAngle = 1400+ArmCalibrate; //1070 just above the ground
-int ArmHighAngle 	= 1690+ArmCalibrate;//just a fun angle for w/e
-int ArmTopAngle 	= 2940+ArmCalibrate;//after firing it will go here
+int CustomAngle 	= 2770; 							//Custom arm angle
+int ArmDownAngle	= 960+ArmCalibrate;		//intake angle
+int ArmPrimeAngle = 1400+ArmCalibrate; 	//1070 just above the ground
+int ArmHighAngle 	= 1690+ArmCalibrate;	//just a fun angle for w/e
+int ArmTopAngle 	= 2940+ArmCalibrate;	//after firing it will go here
 
 bool hasObject = false;
 
@@ -214,7 +214,7 @@ task clawTask() //this just manages the PID on the robot
 		if(abs(clawPowerL)> ClosePower)//checking whether motors are stalling
 		{
 			stallTimeL+=dTime;
-			if(stallTimeL>ClawStallTime) {stalledL = true;}//updates stalleL state
+			if(stallTimeL>ClawStallTime) {stalledL = true;}//updates stallL state
 		}
 		else
 		{
@@ -234,20 +234,13 @@ task clawTask() //this just manages the PID on the robot
 		}
 
 		//Setting motor power ------------------------------------------------
-		if(!enablePID){SetClawL(0);
-			hasObject = false;}//If PID disbaled
-		else if(stalledL){SetClawL(clawPowerL>0?ClawStallPower:-ClawStallPower);
-			hasObject = true;}//If stalled, it will run at max stall power
-		else{
-			SetClawL(clawPowerL);
-			hasObject = false;}// Setting the powers to the motors.
+		if(!enablePID){SetClawL(0);}//If PID disabled
+		else if(stalledL){SetClawL(clawPowerL>0?ClawStallPower:-ClawStallPower);}//If stalled, it will run at max stall power
+		else{SetClawL(clawPowerL);}// Setting the powers to the motors.
 
-		if(!enablePID){SetClawR(0);
-			hasObject = false;}//If PID disbaled
-		else if(stalledR){SetClawR(clawPowerR>0?ClawStallPower:-ClawStallPower);
-			hasObject = true;}//If stalled, it will run at max stall power
-		else{SetClawR(clawPowerR);
-			hasObject = false;}// Setting the powers to the motors.
+		if(!enablePID){SetClawR(0);}//If PID disabled
+		else if(stalledR){SetClawR(clawPowerR>0?ClawStallPower:-ClawStallPower);}//If stalled, it will run at max stall power
+		else{SetClawR(clawPowerR);}// Setting the powers to the motors.
 
 		lastErrorL = errorL;
 		lastErrorR = errorR;
@@ -270,6 +263,7 @@ task armTask()//################################################################
 	int armPotentiometer = 0;
 	int stallTime = 0;
 	int armState = 0; //this is the local state (if this isn't there, there is a 1 in 40 chance that the command won't execute)
+
 	//firing
 	int fireTargetTime = 0; // for timeout
 	bool fire = false; // tells the code that the fire macro has been called
@@ -335,22 +329,16 @@ task armTask()//################################################################
 		dError = (error - lastError)*(dTime>0?1000/dTime:0);
 
 		//PID addition part
-		if ((abs(accError)>abs(accError+error)) ) //if acc error will be reduced
-		{
-			accError+= error;
-		}
-		else if ((abs(error*ArmP + accError*ArmI)+ArmFineOffset)<=ArmPILimit)//if the motor output is less than the cap, you can accumulate
-		{
-			accError+=error;
-		}
+		if ((abs(accError)>abs(accError+error))) {accError+= error;}//if acc error will be reduced
+		else if ((abs(error*ArmP + accError*ArmI)+ArmFineOffset)<=ArmPILimit){accError+=error;}//if the motor output is less than the cap, you can accumulate
+
 		armPower = (abs(error*ArmFineP)<ArmFinePLimit? error*ArmFineP:(error*ArmP+(error>0?ArmFineOffset:-ArmFineOffset))) + dErrorAvg*ArmD + accError*ArmI; //arm power according to the PIDs
 
 		//Stall Check
 		if(abs(armPower)> ArmStallDetect)//checking whether motors are stalling
 		{
 			stallTime+=dTime;
-			if(stallTime>ArmStallTime) {stalled = true;}//updates stalleL state
-
+			if(stallTime>ArmStallTime) {stalled = true;}//updates stallL state
 		}
 		else
 		{
@@ -358,49 +346,26 @@ task armTask()//################################################################
 			stallTime = 0;
 		}
 		//Fire stuffs
-		if (fire && fireTargetTime == 0)
-		{
-			fireTargetTime = currentTime+FireExpireTime;
-		}
-		else if (fire && armPotentiometer >= FireDetectAngle && fireTargetTime > (currentTime+FireOverdriveTime) )
-		{
-			fireTargetTime = currentTime+FireOverdriveTime;
-		}
+		if (fire && fireTargetTime == 0){fireTargetTime = currentTime+FireExpireTime;}
+		else if (fire && armPotentiometer >= FireDetectAngle && fireTargetTime > (currentTime+FireOverdriveTime)){fireTargetTime = currentTime+FireOverdriveTime;}
 
 		//Setting motor powers
-		if (!enablePID)
-		{
-			SetArm(0);
-		}
-		else if(fire)
-		{
-			SetArm(127);
-		}
-		else if(stalled)//If stalled, it will run at max stall power
-		{
-			SetArm(armPower>0?ArmStallPower:-ArmStallPower);
-		}
-		else// Setting the power to the motors.
-		{
-			SetArm(armPower);
-		}
+		if (!enablePID){SetArm(0);}
+		else if(fire){SetArm(127);}
+		else if(stalled){SetArm(armPower>0?ArmStallPower:-ArmStallPower);}//If stalled, it will run at max stall power
+		else {SetArm(armPower);}// Setting the power to the motors.
+
 		if (fire && currentTime>fireTargetTime)
 		{
 			fire = false;
 			ArmFired = true;
-			if (ArmState == 0)
-			{
-				ArmState = 4; //the state at which the arm will go upright
-			}
+			if (ArmState == 0){ArmState = 4;}//the state at which the arm will go upright
 		}
-		dErrorAvg+= (-dErrorLog[logPos]/10);
+		dErrorAvg += (-dErrorLog[logPos]/10);
 		dErrorLog[logPos] = dError;
-		dErrorAvg+= (dError/10);
+		dErrorAvg += (dError/10);
 		++logPos;
-		if (logPos>9)
-		{
-			logPos = 0;
-		}
+		if (logPos>9){logPos = 0;}
 		lastError = error;
 		lastTime = currentTime;
 		wait1Msec(20);
@@ -410,34 +375,14 @@ task driveManager()
 {
 	while (true)
 	{
-		if (vexRT[Btn6U])
-		{
-			ClawState = 2;
-		}
-		else if (vexRT[Btn6D])
-		{
-			ClawState =3;
-		}
-		else if (vexRT[Btn8R])
-		{
-			ClawState = 9;
-		}
-		if (vexRT[Btn5U]) // arm testing
-		{
-			ArmState= 3;
-		}
-		else if (vexRT[Btn5D])
-		{
-			ArmState = 2;
-		}
-		else if (vexRT[Btn7L])
-		{
-			ArmState = 9;
-		}
-		else if (vexRT[Btn7D])
-		{
-			ArmState = 5;
-		}
+		if (vexRT[Btn6U]){ClawState = 2;}
+		else if (vexRT[Btn6D]){ClawState =3;}
+		else if (vexRT[Btn8R]){ClawState = 9;}
+
+		if (vexRT[Btn5U]) {ArmState= 3;}// arm testing
+		else if (vexRT[Btn5D]){ArmState = 2;}
+		else if (vexRT[Btn7L]){ArmState = 9;}
+		else if (vexRT[Btn7D]){ArmState = 5;
 
 		//this will manage the inputs from the driver and decide what state to put everything on the robot
 		wait1Msec(20);
