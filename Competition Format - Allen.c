@@ -33,6 +33,7 @@
 task clawTask();
 void SetBase(int powerL, int powerR);
 void SetArm(int power);
+void blockAuton();
 
 // Pot calibration
 
@@ -565,7 +566,7 @@ fix the parameters in the drive distance function*/
 //
 
 task autonomous(){
-
+	/* Initalize Controllers */
 	clearDebugStream();
 	datalogClear();
 	clearTimer(T1);
@@ -573,84 +574,7 @@ task autonomous(){
 	wait1Msec(5);
 	startTask(armTask);
 
-	////claw opening
-
-	ClawState = 5;
-	while(!((SensorValue[clawLPot] < (ClawLFullOpen + 100) && SensorValue[clawLPot] > (ClawLFullOpen - 100)) &&
-		(SensorValue[clawRPot] < (ClawRFullOpen + 100) && SensorValue[clawRPot] > (ClawRFullOpen - 100)))){} // Wait until state
-
-	ArmState = 1;  //raise arms up
-	while(!(SensorValue[armPot] < (CustomAngle + 100) && SensorValue[armPot] > (CustomAngle - 100))){} // Wait until state
-
-	ArmState = 9;
-
-	////while(SensorValue[middle] > 400 /*adjust value*/){
-	//	SetBase(20,20);
-
-	//	if(SensorValue[middle] < 400)
-	//	{
-	//		SetBase(0,0);
-	//		break;
-	//	}
-	//}
-
-	wait1Msec(100);
-	SensorValue[encoderL] = SensorValue[encoderR] = 0;
-
-	//move foward
-	int firstdrive = 500;
-	int encR = 600;
-
-	while(((Sensorvalue[encoderR] + Sensorvalue[encoderL]) /2 )< firstdrive){
-		SetBase(70,70);
-	}
-
-
-
-	//while(Sensorvalue[encoderR] < -400 )
-	//	{
-
-	//	}
-
-
-
-	wait1Msec(200);
-	SensorValue[encoderL] = SensorValue[encoderR] = 0;
-
-	//turn horizintal
-	while(Sensorvalue[encoderR] < 470){
-		SetBase(-40,40);
-
-  }
-
-  SensorValue[encoderL] = SensorValue[encoderR] = 0;
-  while(((Sensorvalue[encoderR] + Sensorvalue[encoderL])*0.5) < encR){
-		SetBase(100,100);
-	}
-
-	SensorValue[encoderL] = SensorValue[encoderR] = 0;
-	while(Sensorvalue[encoderR] < 470){
-		SetBase(-40,40);
-
-  }
-
-
-		SetBase(-40,-40);
-
-		wait1Msec(1000)
-
-		//bad very baaaaad
-		//SetBase(0,0);
-
-
-  	ArmState = 1;  //raise arms up
-	while(!(SensorValue[armPot] < (CustomAngle + 100) && SensorValue[armPot] > (CustomAngle - 100))){}
-
-
-
-
-
-
+	blockAuton();
 
 
 
@@ -666,28 +590,28 @@ task autonomous(){
 	//while(sensorvalue[encoderR] < 400)///////{
 	//	SetBase(40,40);
 
- // }
+	// }
 
- // wait1Msec(300);
+	// wait1Msec(300);
 
- // SensorValue[encoderL] = SensorValue[encoderR] = 0;
+	// SensorValue[encoderL] = SensorValue[encoderR] = 0;
 	////turns backward
 	//while(sensorvalue[encoderR] < 100)/////////{
 	//	SetBase(-40,40);
 
- // }
+	// }
 
- // wait1Msec(300);
- // //moving towards fence
- // SensorValue[encoderL] = SensorValue[encoderR] = 0;
- // while(sensorvalue[encoderR] < 100)///////{
+	// wait1Msec(300);
+	// //moving towards fence
+	// SensorValue[encoderL] = SensorValue[encoderR] = 0;
+	// while(sensorvalue[encoderR] < 100)///////{
 	//	SetBase(-100,-100);
 
- // }
- // wait1Msec(300);
+	// }
+	// wait1Msec(300);
 
- // // stop base
- // SetBase(0,0);
+	// // stop base
+	// SetBase(0,0);
 
 
 
@@ -897,13 +821,64 @@ task usercontrol()
 	int rightPower = 0;
 	while (true)
 	{
-	//	if(vexRT(Btn8D))
-	//	{
-	//		autonomous1();
-	//}
+		//	if(vexRT(Btn8D))
+		//	{
+		//		autonomous1();
+		//}
 		leftPower 	= vexRT[Ch3] + vexRT[Ch1];
 		rightPower 	= vexRT[Ch3] - vexRT[Ch1];
 		SetBase(leftPower,rightPower);
 		wait1Msec(20);
 	}
+}
+
+void blockAuton() {
+	/* Open Claw to Start */
+	ClawState = 5;
+	while(!((SensorValue[clawLPot] < (ClawLFullOpen + 100) && SensorValue[clawLPot] > (ClawLFullOpen - 100)) &&
+		(SensorValue[clawRPot] < (ClawRFullOpen + 100) && SensorValue[clawRPot] > (ClawRFullOpen - 100)))){} // Wait until state
+
+	/* Drive to Position */
+	ArmState = 1;  // raise arms to drive
+	while(!(SensorValue[armPot] < (CustomAngle + 100) && SensorValue[armPot] > (CustomAngle - 100))){} // Wait until state
+
+	ArmState = 9; // Disable Controller
+
+	wait1Msec(100);
+	SensorValue[encoderL] = SensorValue[encoderR] = 0;
+
+	//move foward
+	int firstdrive = 500;
+	int encR = 600;
+
+	while(((SensorValue[encoderR] + SensorValue[encoderL]) / 2 ) < firstdrive){//move past cube
+		SetBase(70,70);
+	}
+
+	wait1Msec(200);
+	SensorValue[encoderL] = SensorValue[encoderR] = 0;
+
+
+	while(SensorValue[encoderR] < 470){ //turn 90 Degrees
+		SetBase(-40,40);
+	}
+
+	SensorValue[encoderL] = SensorValue[encoderR] = 0;
+	while(((SensorValue[encoderR] + SensorValue[encoderL]) * 0.5) < encR){ //move to middle
+		SetBase(100,100);
+	}
+
+	SensorValue[encoderL] = SensorValue[encoderR] = 0;
+
+	while(SensorValue[encoderR] < 470){ //turn 90 Degrees
+		SetBase(-40, 40);
+	}
+
+	SetBase(-40,-40); //drive up to wall forever
+
+	wait1Msec(1000);
+
+	/* Blocking Position */
+	ArmState = 1;  //raise arm completely up
+	while(!(SensorValue[armPot] < (CustomAngle + 100) && SensorValue[armPot] > (CustomAngle - 100))){}
 }
